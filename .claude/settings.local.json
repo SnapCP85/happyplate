@@ -12,7 +12,13 @@
       "Bash(cp ~/Downloads/App.jsx src/App.jsx)",
       "Bash(cp ~/Downloads/FamilyFoodApp.jsx src/FamilyFoodApp.jsx)",
       "Bash(cp ~/Downloads/AuthScreen.jsx src/AuthScreen.jsx)",
-      "Bash(cp ~/Downloads/supabase.js src/lib/supabase.js)"
+      "Bash(cp ~/Downloads/supabase.js src/lib/supabase.js)",
+      "Bash(vercel whoami:*)",
+      "Bash(vercel link:*)",
+      "Bash(vercel env:*)",
+      "Bash(gh auth:*)",
+      "Bash(vercel project:*)",
+      "Bash(git fetch:*)"
     ]
   }
 }

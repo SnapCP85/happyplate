@@ -210,7 +210,7 @@ const ENC = [
 ];
 
 const ONBOARD_SLIDES = [
-  { visual:null,    title:"Happy Meals",           desc:"The fun, easy way to handle mealtime and snack time with your family. No more \"what do you want?\"",                                        btn:"See how it works →" },
+  { visual:null,    title:"HappyPlate",            desc:"The fun, easy way to handle mealtime and snack time with your family. No more \"what do you want?\"",                                        btn:"See how it works →" },
   { visual:"👨‍👩‍👧", title:"Parents set the menu",  desc:"Before mealtime, tap a meal → Parent Setup. Toggle what's available tonight in under a minute. Save favorites as templates!",                btn:"Got it →" },
   { visual:"⭐",    title:"Kids build their plate", desc:"Hand them the phone. They tap Kid's Turn, choose their food, and hit Done. You review it together — no debates!",                            btn:"Love it →" },
   { visual:"🏠",    title:"The Pantry",             desc:"Track what's in stock, let kids browse for snacks, and your grocery list builds itself automatically from out-of-stock items.",              btn:"Let's go →" },
@@ -266,7 +266,7 @@ const shell = {
 /* ═══════════════════════════════════════════════════════════════════════
    LOGO
 ═══════════════════════════════════════════════════════════════════════ */
-function HappyMealsLogo({ size = 48 }) {
+function HappyPlateLogo({ size = 48 }) {
   return (
     <svg width={Math.round(size * 1.22)} height={size} viewBox="0 0 68 56" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -340,7 +340,7 @@ function HappyMealsLogo({ size = 48 }) {
   );
 }
 
-function HappyMealsIcon({ size = 40 }) {
+function HappyPlateIcon({ size = 40 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
       <defs>
@@ -478,7 +478,7 @@ function OnboardingOverlay({ onDone }) {
             <div style={{ marginBottom:32 }}>
               {slide.visual === null
                 ? <div style={{ animation:"logoSpring 0.7s cubic-bezier(0.34,1.56,0.64,1)", display:"flex", justifyContent:"center" }}>
-                    <HappyMealsLogo size={72} />
+                    <HappyPlateLogo size={72} />
                   </div>
                 : <div style={{ fontSize:92, animation:"bounceIn 0.5s ease", lineHeight:1 }}>{slide.visual}</div>
               }
@@ -972,7 +972,7 @@ export default function App({ savedData = null, onStateChange = null, onSignOut 
         <div style={{ padding:"44px 24px 20px", textAlign:"center", position:"relative" }}>
           <div style={{ position:"absolute", inset:0, background:`radial-gradient(ellipse at 50% 0%, ${BL} 0%, transparent 70%)`, pointerEvents:"none" }} />
           <div style={{ animation:"logoSpring 0.7s cubic-bezier(0.34,1.56,0.64,1)", display:"flex", justifyContent:"center", marginBottom:6, position:"relative" }}>
-            <HappyMealsLogo size={52} />
+            <HappyPlateLogo size={52} />
           </div>
           <h1 style={{ fontSize:28, fontWeight:800, fontFamily:"'Baloo 2'", color:DARK, lineHeight:1.1, marginBottom:4, animation:"greetIn 0.4s 0.1s ease both", position:"relative" }}>
             Happy <span style={{ color:B }}>Meals</span>
@@ -1039,7 +1039,7 @@ export default function App({ savedData = null, onStateChange = null, onSignOut 
         {/* Pantry header */}
         <div style={{ background:`linear-gradient(140deg,${PT.g1},${PT.g2})`, padding:"44px 22px 18px", flexShrink:0, boxShadow:`0 4px 24px ${PT.shadow}` }}>
           <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
-            <HappyMealsIcon size={36} />
+            <HappyPlateIcon size={36} />
             <div>
               <h1 style={{ color:"white", fontSize:20, fontWeight:800, fontFamily:"'Baloo 2'", lineHeight:1 }}>The Pantry</h1>
               <p style={{ color:"rgba(255,255,255,0.78)", fontSize:12, marginTop:3, fontFamily:"'Baloo 2'" }}>{inStockCount} item{inStockCount!==1?"s":""} in stock</p>

@@ -903,7 +903,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                   fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",
                   letterSpacing:"0.01em",
                 }}>
-                Got it
+                Let's get happy! 🎉
               </button>
             </div>
           </div>

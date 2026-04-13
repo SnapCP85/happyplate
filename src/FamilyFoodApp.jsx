@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 
 /* ═══════════════════════════════════════════════════════════════════════
    DESIGN TOKENS
@@ -764,17 +764,20 @@ function InsightsView({ pantry, usage }) {
 /* ═══════════════════════════════════════════════════════════════════════
    APP
 ═══════════════════════════════════════════════════════════════════════ */
-export default function App() {
+export default function App({ savedData = null, onStateChange = null, onSignOut = null, userEmail = null }) {
+  const d = savedData || {};   // shorthand — d.kids, d.menu, etc.
+  const saveRef = useRef(null);
+
   const [meal, setMeal]                   = useState("dinner");
   const [screen, setScreen]               = useState("home");
-  const [showOnboarding, setShowOnboarding] = useState(true);
-  const [kids, setKids]                   = useState([]);
+  const [showOnboarding, setShowOnboarding] = useState(d.showOnboarding !== false);
+  const [kids, setKids]                   = useState(d.kids || []);
   const [cookingOrder, setCookingOrder]   = useState([]);
   const [homeTab, setHomeTab]             = useState("meals");
   const [pantryView, setPantryView]       = useState("snack");
-  const [menu, setMenu]                   = useState(makeInitialMenu);
-  const [pantry, setPantry]               = useState(makeInitialPantry);
-  const [usage, setUsage]                 = useState({});
+  const [menu, setMenu]                   = useState(d.menu || makeInitialMenu);
+  const [pantry, setPantry]               = useState(d.pantry || makeInitialPantry);
+  const [usage, setUsage]                 = useState(d.usage || {});
   const [plate, setPlate]                 = useState([]);
   const [plateRequest, setPlateRequest]   = useState("");
   const [removingIds, setRemovingIds]     = useState(new Set());
@@ -784,10 +787,10 @@ export default function App() {
   const [snackRemoving, setSnackRemoving] = useState(new Set());
   const [snackWiggle, setSnackWiggle]     = useState(false);
   const [snackDone, setSnackDone]         = useState(false);
-  const [templates, setTemplates]         = useState({});
+  const [templates, setTemplates]         = useState(d.templates || {});
   const [addModal, setAddModal]           = useState(null);
   const [pantryModal, setPantryModal]     = useState(false);
-  const [groceryList, setGroceryList]     = useState([]);
+  const [groceryList, setGroceryList]     = useState(d.groceryList || []);
   const [groceryInput, setGroceryInput]   = useState("");
   const [copied, setCopied]               = useState(false);
   const [checkingOff, setCheckingOff]     = useState(new Set());
@@ -796,6 +799,27 @@ export default function App() {
   const [savingTmpl, setSavingTmpl]       = useState(false);
   const [tmplName, setTmplName]           = useState("");
   const [spark, setSpark]                 = useState(false);
+  const [saveStatus, setSaveStatus]       = useState("idle"); // idle | saving | saved
+
+  /* ── Auto-save whenever key state changes ── */
+  useEffect(() => {
+    if (!onStateChange) return;
+    if (saveRef.current) clearTimeout(saveRef.current);
+    setSaveStatus("saving");
+    saveRef.current = setTimeout(() => {
+      onStateChange({
+        showOnboarding,
+        kids,
+        menu,
+        pantry,
+        usage,
+        templates,
+        groceryList,
+      });
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    }, 1800);
+  }, [showOnboarding, kids, menu, pantry, usage, templates, groceryList]);
 
   const m          = MEALS[meal];
   const mealMenu   = menu[meal];
@@ -954,6 +978,23 @@ export default function App() {
             Happy <span style={{ color:B }}>Meals</span>
           </h1>
           <p key={greet.text} style={{ color:MID, fontSize:13, fontFamily:"'Baloo 2'", fontWeight:600, animation:"greetIn 0.5s 0.2s ease both", position:"relative" }}>{greet.emoji} {greet.text}</p>
+
+          {/* Save status + sign out row */}
+          {onSignOut && (
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:12, marginTop:10, position:"relative" }}>
+              {saveStatus !== "idle" && (
+                <span style={{ fontSize:11, fontFamily:"'Baloo 2'", fontWeight:700, color:saveStatus==="saved"?"#16A34A":SOFT }}>
+                  {saveStatus==="saving" ? "💾 Saving…" : "✓ Saved"}
+                </span>
+              )}
+              {saveStatus==="idle" && userEmail && (
+                <span style={{ fontSize:11, fontFamily:"'Baloo 2'", fontWeight:600, color:SOFT }}>{userEmail}</span>
+              )}
+              <button onClick={onSignOut} style={{ background:"none", border:`1.5px solid #EDE5DA`, borderRadius:50, padding:"4px 12px", fontSize:11, fontFamily:"'Baloo 2'", fontWeight:700, color:SOFT, cursor:"pointer" }}>
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Active cooking re-entry */}

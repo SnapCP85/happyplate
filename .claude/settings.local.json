@@ -3,7 +3,16 @@
     "allow": [
       "Bash(git init:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git remote:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(npm install:*)",
+      "Bash(mkdir -p src/lib)",
+      "Bash(cp ~/Downloads/App.jsx src/App.jsx)",
+      "Bash(cp ~/Downloads/FamilyFoodApp.jsx src/FamilyFoodApp.jsx)",
+      "Bash(cp ~/Downloads/AuthScreen.jsx src/AuthScreen.jsx)",
+      "Bash(cp ~/Downloads/supabase.js src/lib/supabase.js)"
     ]
   }
 }

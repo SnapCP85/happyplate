@@ -18,7 +18,9 @@
       "Bash(vercel env:*)",
       "Bash(gh auth:*)",
       "Bash(vercel project:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "Bash(vercel domains:*)",
+      "Bash(vercel ls:*)"
     ]
   }
 }

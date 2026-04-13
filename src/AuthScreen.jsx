@@ -166,7 +166,7 @@ export default function AuthScreen() {
           <Logo />
         </div>
         <h1 style={{ fontSize: 28, fontWeight: 800, color: DARK, lineHeight: 1.1, animation: 'fadeUp 0.4s 0.15s ease both' }}>
-          Happy <span style={{ color: B }}>Meals</span>
+          Happy<span style={{ color: B }}>Plate</span>
         </h1>
         <p style={{ color: MID, fontSize: 13, marginTop: 5, fontWeight: 600, animation: 'fadeUp 0.4s 0.22s ease both' }}>
           {mode === 'login'  ? 'Welcome back! 👋' :

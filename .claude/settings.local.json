@@ -20,7 +20,8 @@
       "Bash(vercel project:*)",
       "Bash(git fetch:*)",
       "Bash(vercel domains:*)",
-      "Bash(vercel ls:*)"
+      "Bash(vercel ls:*)",
+      "Bash(npm run:*)"
     ]
   }
 }

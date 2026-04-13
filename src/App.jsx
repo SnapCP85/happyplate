@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase, loadUserData, saveUserData } from './lib/supabase';
 import AuthScreen from './AuthScreen';
-import FamilyFoodApp from './FamilyFoodApp';
+import HappyPlateApp from './HappyPlateApp';
 
 export default function App() {
   const [session, setSession]       = useState(undefined);  // undefined = loading
@@ -31,7 +31,7 @@ export default function App() {
     }
   }, [session, dataLoaded]);
 
-  /* ── Debounced save triggered by FamilyFoodApp ── */
+  /* ── Debounced save triggered by HappyPlateApp ── */
   function handleStateChange(appState) {
     if (!session?.user) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -79,7 +79,7 @@ export default function App() {
   }
 
   return (
-    <FamilyFoodApp
+    <HappyPlateApp
       savedData={savedData}
       onStateChange={handleStateChange}
       onSignOut={handleSignOut}

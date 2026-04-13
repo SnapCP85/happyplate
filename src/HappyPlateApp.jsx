@@ -593,6 +593,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const [snackPicks,    setSnackPicks]    = useState([]);
   const [snackDone,     setSnackDone]     = useState(false);
   const [pantryExplained,setPantryExplained]=useState(d.pantryExplained===true);
+  const [homeTourSeen,  setHomeTourSeen]  =useState(d.homeTourSeen===true);
   const [saveStatus,    setSaveStatus]    = useState("idle");
 
   /* ── auto-save ── */
@@ -601,11 +602,11 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     if (saveRef.current) clearTimeout(saveRef.current);
     setSaveStatus("saving");
     saveRef.current = setTimeout(() => {
-      onStateChange({showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained});
+      onStateChange({showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained,homeTourSeen});
       setSaveStatus("saved");
       setTimeout(()=>setSaveStatus("idle"),2000);
     }, 1800);
-  }, [showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained]);
+  }, [showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained,homeTourSeen]);
 
   /* ── derived ── */
   const m          = MEALS[meal];
@@ -839,6 +840,72 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             </div>
           )}
         </div>
+
+        {/* First-time welcome card */}
+        {!homeTourSeen && (
+          <div style={{padding:"0 20px 20px",animation:"fadeUp 0.5s ease both"}}>
+            <div style={{
+              position:"relative",
+              background:"white",
+              border:`2.5px solid ${B}`,
+              borderRadius:24,
+              padding:"20px 20px 18px",
+              boxShadow:`0 10px 30px ${B}22, ${CS}`,
+              overflow:"hidden",
+            }}>
+              <div style={{position:"absolute",top:-40,right:-40,width:140,height:140,borderRadius:"50%",background:`radial-gradient(circle,${BL} 0%,transparent 70%)`,pointerEvents:"none"}}/>
+
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14,position:"relative"}}>
+                <div style={{fontSize:26}}>👋</div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:16,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",lineHeight:1.15}}>
+                    Welcome{kids[0]?`, ${kids[0]}'s family`:""}!
+                  </div>
+                  <div style={{fontSize:12,fontWeight:600,color:MID,fontFamily:"'Baloo 2'",marginTop:2}}>
+                    Here's how HappyPlate works — it takes 30 seconds.
+                  </div>
+                </div>
+              </div>
+
+              <div style={{display:"flex",flexDirection:"column",gap:10,position:"relative"}}>
+                {[
+                  {n:"1",emoji:"🍽️",title:"Pick a meal above",desc:"Breakfast, lunch, dinner or snack — tap a pill."},
+                  {n:"2",emoji:"👨‍🍳",title:"Tap Create Meal",desc:"You set tonight's menu in under a minute. Save favorites as templates."},
+                  {n:"3",emoji:"⭐",title:"Hand the phone to your kid",desc:"They build their plate, you review it — no debates."},
+                  {n:"4",emoji:"🏠",title:"Stock the Pantry (top right)",desc:"Track what's in stock. Out-of-stock items auto-build your grocery list."},
+                ].map(step => (
+                  <div key={step.n} style={{display:"flex",alignItems:"flex-start",gap:12}}>
+                    <div style={{
+                      flexShrink:0,width:28,height:28,borderRadius:"50%",
+                      background:`linear-gradient(135deg,${B},${BG})`,
+                      color:"white",fontSize:13,fontWeight:800,fontFamily:"'Baloo 2'",
+                      display:"flex",alignItems:"center",justifyContent:"center",
+                      boxShadow:`0 2px 8px ${B}44`,
+                    }}>{step.n}</div>
+                    <div style={{flex:1,paddingTop:2}}>
+                      <div style={{fontSize:13.5,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",lineHeight:1.25}}>
+                        <span style={{marginRight:6}}>{step.emoji}</span>{step.title}
+                      </div>
+                      <div style={{fontSize:12,fontWeight:500,color:MID,fontFamily:"'Baloo 2'",lineHeight:1.45,marginTop:2}}>
+                        {step.desc}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={()=>setHomeTourSeen(true)} className="btn"
+                style={{
+                  width:"100%",marginTop:18,padding:"14px",border:"none",borderRadius:16,
+                  background:`linear-gradient(135deg,${B},${BG})`,color:"white",
+                  fontSize:15,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",
+                  boxShadow:`0 6px 20px ${B}55`,position:"relative",
+                }}>
+                Got it — let's cook! 🎉
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Meal selector pills */}
         <div style={{padding:"0 20px",display:"flex",gap:10,justifyContent:"center",marginBottom:24}}>

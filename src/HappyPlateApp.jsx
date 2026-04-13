@@ -336,7 +336,10 @@ function ToggleCard({item,m,onToggle,onRemove}) {
     <div style={{position:"relative"}}>
       <div onClick={onToggle} className="card" style={{background:item.active?m.light:"white",borderRadius:20,padding:"14px 6px 12px",textAlign:"center",border:`2.5px solid ${item.active?m.g1:"#EDE5DA"}`,boxShadow:item.active?`0 4px 20px ${m.shadow}`:CS,transition:"all 0.22s"}}>
         {item.active && <div style={{position:"absolute",top:-9,left:-9,width:22,height:22,borderRadius:"50%",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:12,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",animation:"badgePop 0.25s ease",boxShadow:`0 3px 10px ${m.shadow}`}}>✓</div>}
-        <div style={{fontSize:28,lineHeight:1}}>{item.emoji}</div>
+        {item.photo
+          ? <img src={item.photo} alt={item.name} style={{width:36,height:36,borderRadius:10,objectFit:"cover",margin:"0 auto 2px"}}/>
+          : <div style={{fontSize:28,lineHeight:1}}>{item.emoji}</div>
+        }
         <div style={{fontSize:10,fontWeight:700,marginTop:5,color:item.active?m.text:SOFT,fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
       </div>
       {onRemove && <button onClick={e=>{e.stopPropagation();onRemove();}} style={{position:"absolute",top:-7,right:-7,width:20,height:20,borderRadius:"50%",background:"#EF4444",color:"white",fontSize:9,border:"2px solid white",cursor:"pointer",zIndex:3,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>}
@@ -345,29 +348,42 @@ function ToggleCard({item,m,onToggle,onRemove}) {
 }
 
 /* ─── PANTRY CARD ─── */
-function PantryCard({item,usageCount,colorIdx,onToggle,onRemove}) {
+function PantryCard({item,usageCount,colorIdx,onToggle,onRemove,onEdit}) {
   const pal = PALS[colorIdx%PALS.length];
   return (
     <div style={{position:"relative"}}>
       <div onClick={onToggle} className="card" style={{background:item.inStock?pal.bg:"#F0EEE8",borderRadius:20,padding:"14px 6px 11px",textAlign:"center",border:`2.5px solid ${item.inStock?pal.ring:"#C4BDB4"}`,opacity:item.inStock?1:0.72,boxShadow:item.inStock?`0 4px 16px ${pal.glow}`:CS,transition:"all 0.28s"}}>
         {usageCount>0 && <div style={{position:"absolute",top:-8,right:-8,background:item.inStock?pal.check:"#9CA3AF",color:"white",borderRadius:10,padding:"1px 6px",fontSize:9,fontWeight:800,fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>{usageCount}×</div>}
-        <div style={{fontSize:28,lineHeight:1,filter:item.inStock?"none":"grayscale(1)"}}>{item.emoji}</div>
+        {item.photo
+          ? <img src={item.photo} alt={item.name} style={{width:40,height:40,borderRadius:12,objectFit:"cover",margin:"0 auto 2px",filter:item.inStock?"none":"grayscale(1)"}}/>
+          : <div style={{fontSize:28,lineHeight:1,filter:item.inStock?"none":"grayscale(1)"}}>{item.emoji}</div>
+        }
         <div style={{fontSize:9,fontWeight:700,marginTop:5,color:item.inStock?DARK:"#5C5650",fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
         <div style={{fontSize:8,marginTop:2,fontFamily:"'Baloo 2'",fontWeight:700,color:item.inStock?pal.check:"#9CA3AF"}}>{item.inStock?"✓ in stock":"✗ out of stock"}</div>
       </div>
+      {onEdit && <button onClick={e=>{e.stopPropagation();onEdit();}} style={{position:"absolute",top:-7,right:-7,width:20,height:20,borderRadius:"50%",background:"#6B7280",color:"white",fontSize:9,border:"2px solid white",cursor:"pointer",zIndex:3,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✏️</button>}
       {onRemove && <button onClick={e=>{e.stopPropagation();onRemove();}} style={{position:"absolute",top:-7,left:-7,width:20,height:20,borderRadius:"50%",background:"#EF4444",color:"white",fontSize:9,border:"2px solid white",cursor:"pointer",zIndex:3,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:800}}>✕</button>}
     </div>
   );
 }
 
 /* ─── KID FOOD CARD ─── */
-function KidFoodCard({item,isOnPlate,colorIdx,onTap,small}) {
+function KidFoodCard({item,isOnPlate,colorIdx,onTap,onNote,small}) {
   const pal = PALS[colorIdx%PALS.length];
   const rot = isOnPlate ? 0 : ROTS[colorIdx%ROTS.length];
   return (
     <div onClick={onTap} className="card" style={{background:isOnPlate?pal.bg:"white",borderRadius:small?18:22,padding:small?"14px 6px 10px":"18px 8px 14px",textAlign:"center",border:`3px solid ${isOnPlate?pal.ring:"#F0EDE8"}`,position:"relative",transform:`rotate(${rot}deg) scale(${isOnPlate?1.02:1})`,transition:"all 0.18s cubic-bezier(0.34,1.56,0.64,1)",boxShadow:isOnPlate?`0 0 0 3px white,0 4px 20px ${pal.glow}`:"0 2px 4px rgba(0,0,0,0.06),0 6px 16px rgba(0,0,0,0.08)"}}>
       {isOnPlate && <div style={{position:"absolute",top:-10,right:-10,width:26,height:26,borderRadius:"50%",background:pal.check,color:"white",fontSize:13,fontWeight:900,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 3px 10px ${pal.glow},0 0 0 2px white`,animation:"badgePop 0.25s cubic-bezier(0.34,1.56,0.64,1)",zIndex:2}}>✓</div>}
-      <div style={{fontSize:small?34:44,lineHeight:1}}>{item.emoji}</div>
+      {/* Note indicator */}
+      {isOnPlate && onNote && (
+        <div onClick={e=>{e.stopPropagation();onNote();}} style={{position:"absolute",bottom:-8,left:"50%",transform:"translateX(-50%)",background:item.note?pal.check:"#D6CFC4",color:"white",borderRadius:50,padding:"2px 8px",fontSize:9,fontWeight:800,fontFamily:"'Baloo 2'",border:"1.5px solid white",whiteSpace:"nowrap",zIndex:2,cursor:"pointer"}}>
+          {item.note ? `📝 ${item.note.slice(0,12)}${item.note.length>12?"…":""}` : "+ note"}
+        </div>
+      )}
+      {item.photo
+        ? <img src={item.photo} alt={item.name} style={{width:small?38:52,height:small?38:52,borderRadius:small?12:16,objectFit:"cover",margin:"0 auto 2px"}}/>
+        : <div style={{fontSize:small?34:44,lineHeight:1}}>{item.emoji}</div>
+      }
       <div style={{fontSize:small?10:12,fontWeight:700,marginTop:small?5:7,color:isOnPlate?DARK:MID,fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
     </div>
   );
@@ -557,6 +573,9 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const [pantryPrompt,  setPantryPrompt]  = useState(null);
   const [customItemName,setCustomItemName]= useState("");
   const [customItemEmoji,setCustomItemEmoji]=useState("");
+  const [editingItem,   setEditingItem]   = useState(null);  // pantry item id being edited
+  const [noteTarget,    setNoteTarget]    = useState(null);  // plateKey getting a note
+  const [noteText,      setNoteText]      = useState("");
   const [pantryView,    setPantryView]    = useState("snack");
   const [stockFilter,   setStockFilter]   = useState("all");
   const [snackFilter,   setSnackFilter]   = useState("all");
@@ -628,6 +647,39 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     setMenu(prev=>({...prev,[meal]:{...prev[meal],[type]:[...prev[meal][type].filter(x=>x.name.toLowerCase()!==item.name.toLowerCase()),newItem]}}));
     setAddItemSheet(false); setCustomItemName(""); setCustomItemEmoji("");
     if (!inPantry) setPantryPrompt({item,meal});
+  }
+
+  function removeFromMenuByName(name) {
+    setMenu(prev=>({...prev,[meal]:{
+      setMeals: prev[meal].setMeals.filter(x=>x.name.toLowerCase()!==name.toLowerCase()),
+      items:    prev[meal].items.filter(x=>x.name.toLowerCase()!==name.toLowerCase()),
+    }}));
+  }
+
+  /* ── Edit a pantry item (name, emoji, meals, photo) ── */
+  function editPantryItem(id, updates) {
+    setPantry(prev=>({...prev,[id]:{...prev[id],...updates}}));
+    // Sync name/emoji changes into any active menu items too
+    if (updates.name || updates.emoji || updates.photo) {
+      setMenu(prev=>{
+        const next={...prev};
+        for (const mk of Object.keys(next)) {
+          next[mk]={
+            setMeals: next[mk].setMeals.map(x=>x.id===id?{...x,...updates}:x),
+            items:    next[mk].items.map(x=>x.id===id?{...x,...updates}:x),
+          };
+        }
+        return next;
+      });
+    }
+    setEditingItem(null);
+  }
+
+  /* ── Save a special note to a plate item ── */
+  function saveItemNote() {
+    if (!noteTarget) return;
+    setPlate(prev=>prev.map(p=>p.plateKey===noteTarget?{...p,note:noteText.trim()}:p));
+    setNoteTarget(null); setNoteText("");
   }
 
   function confirmAddToPantry() {
@@ -810,8 +862,20 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
           </button>
         </div>
 
+        {/* Snack time shortcut */}
+        <div style={{padding:"10px 20px 0"}}>
+          <div onClick={()=>{setScreen("pantry");setPantryView("snack");}} className="btn"
+            style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 18px",borderRadius:18,background:"white",border:"1.5px solid #EDE5DA",boxShadow:CS,cursor:"pointer"}}>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:22}}>🍿</span>
+              <span style={{fontSize:14,fontWeight:700,color:MID,fontFamily:"'Baloo 2'"}}>Snack time?</span>
+            </div>
+            <span style={{fontSize:13,fontWeight:700,color:B,fontFamily:"'Baloo 2'"}}>Let them pick →</span>
+          </div>
+        </div>
+
         {/* Subtle helper tip */}
-        <p style={{textAlign:"center",fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:20,padding:"0 24px"}}>
+        <p style={{textAlign:"center",fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:16,padding:"0 24px"}}>
           Choose a meal above and tap Create — takes 30 seconds.
         </p>
       </div>
@@ -996,10 +1060,12 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                           const added = menuNames.has(item.name.toLowerCase());
                           const inPantry = pantryItems.some(p=>p.name.toLowerCase()===item.name.toLowerCase());
                           return (
-                            <div key={idx} onClick={()=>!added&&addItemTonight(item)} className={added?"":"card"}
-                              style={{background:added?"#F0FDF4":inPantry?m.light:"white",borderRadius:18,padding:"13px 6px 10px",textAlign:"center",border:`2.5px solid ${added?"#86EFAC":inPantry?m.g1:"#EDE5DA"}`,opacity:added?.7:1,boxShadow:CS,position:"relative",cursor:added?"default":"pointer"}}>
+                            <div key={idx}
+                              onClick={()=>added ? removeFromMenuByName(item.name) : addItemTonight(item)}
+                              className="card"
+                              style={{background:added?"#F0FDF4":inPantry?m.light:"white",borderRadius:18,padding:"13px 6px 10px",textAlign:"center",border:`2.5px solid ${added?"#86EFAC":inPantry?m.g1:"#EDE5DA"}`,boxShadow:CS,position:"relative",cursor:"pointer"}}>
                               {inPantry&&!added&&<div style={{position:"absolute",top:-7,right:-7,background:m.g1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>pantry</div>}
-                              {added&&<div style={{position:"absolute",top:-7,right:-7,background:GR1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>✓ added</div>}
+                              {added&&<div style={{position:"absolute",top:-7,right:-7,background:GR1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>✓ tap to remove</div>}
                               <div style={{fontSize:28,lineHeight:1}}>{item.emoji}</div>
                               <div style={{fontSize:10,fontWeight:700,marginTop:4,color:added?GR1:DARK,fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
                             </div>
@@ -1065,7 +1131,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             <>
               <SL>Set Meals</SL>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
-                {activeSM.map((item,idx)=><KidFoodCard key={item.id} item={item} isOnPlate={plate.some(p=>p.id===item.id)} colorIdx={idx} onTap={()=>togglePlateItem(item)}/>)}
+                {activeSM.map((item,idx)=>{const p=plate.find(x=>x.id===item.id);return <KidFoodCard key={item.id} item={{...item,note:p?.note}} isOnPlate={!!p} colorIdx={idx} onTap={()=>togglePlateItem(item)} onNote={p?()=>{setNoteTarget(p.plateKey);setNoteText(p.note||"");}:null}/>;})}
               </div>
             </>
           )}
@@ -1073,7 +1139,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             <>
               <SL>Sides &amp; Extras</SL>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-                {activeIt.map((item,idx)=><KidFoodCard key={item.id} item={item} small isOnPlate={plate.some(p=>p.id===item.id)} colorIdx={activeSM.length+idx} onTap={()=>togglePlateItem(item)}/>)}
+                {activeIt.map((item,idx)=>{const p=plate.find(x=>x.id===item.id);return <KidFoodCard key={item.id} item={{...item,note:p?.note}} small isOnPlate={!!p} colorIdx={activeSM.length+idx} onTap={()=>togglePlateItem(item)} onNote={p?()=>{setNoteTarget(p.plateKey);setNoteText(p.note||"");}:null}/>;})}
               </div>
             </>
           )}
@@ -1091,6 +1157,37 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             I'm Done! 🎉
           </button>
         </div>
+
+        {/* Special request note sheet */}
+        {noteTarget && (
+          <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.5)",zIndex:60,display:"flex",alignItems:"flex-end"}} onClick={()=>{setNoteTarget(null);setNoteText("");}}>
+            <div onClick={e=>e.stopPropagation()} style={{background:CREAM,width:"100%",borderRadius:"28px 28px 0 0",padding:"24px 20px 44px",animation:"slideUp 0.28s ease",boxShadow:"0 -8px 40px rgba(0,0,0,0.15)"}}>
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                <span style={{fontSize:32}}>{plate.find(p=>p.plateKey===noteTarget)?.emoji||"🍽️"}</span>
+                <div>
+                  <h3 style={{fontSize:17,fontWeight:800,fontFamily:"'Baloo 2'",color:DARK}}>{plate.find(p=>p.plateKey===noteTarget)?.name}</h3>
+                  <p style={{fontSize:13,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:2}}>Any special requests?</p>
+                </div>
+              </div>
+              <input
+                value={noteText}
+                onChange={e=>setNoteText(e.target.value)}
+                onKeyDown={e=>e.key==="Enter"&&saveItemNote()}
+                placeholder={`e.g. "extra cheese", "no crust", "apple juice"`}
+                autoFocus
+                style={{width:"100%",padding:"14px 16px",borderRadius:16,border:`2px solid ${m.g1}`,fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white",marginBottom:14}}
+              />
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>{setNoteTarget(null);setNoteText("");}} className="btn" style={{flex:1,padding:"14px",borderRadius:16,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+                  {noteText?"Clear":"Skip"}
+                </button>
+                <button onClick={saveItemNote} className="btn" style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 16px ${m.shadow}`}}>
+                  {noteText?"Save Note ✓":"Done"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -1121,7 +1218,10 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             {plate.map((item,idx)=>(
               <div key={item.plateKey} style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",borderBottom:idx<plate.length-1?"1px solid #F5EEE6":"none",animation:`fadeUp 0.3s ${idx*0.05}s both`}}>
                 <span style={{fontSize:28}}>{item.emoji}</span>
-                <span style={{fontSize:16,fontWeight:700,color:DARK,fontFamily:"'Baloo 2'"}}>{item.name}</span>
+                <div style={{flex:1}}>
+                  <span style={{fontSize:16,fontWeight:700,color:DARK,fontFamily:"'Baloo 2'"}}>{item.name}</span>
+                  {item.note && <div style={{fontSize:12,fontWeight:600,color:MID,fontFamily:"'Baloo 2'",marginTop:2}}>📝 {item.note}</div>}
+                </div>
               </div>
             ))}
           </div>
@@ -1182,7 +1282,10 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                         {item.checked && <span style={{color:"white",fontSize:14,fontWeight:900,animation:"badgePop 0.2s ease"}}>✓</span>}
                       </div>
                       <span style={{fontSize:24,opacity:item.checked?.45:1,transition:"opacity 0.2s"}}>{item.emoji}</span>
-                      <span style={{flex:1,fontSize:15,fontWeight:600,fontFamily:"'Baloo 2'",color:item.checked?SOFT:DARK,textDecoration:item.checked?"line-through":"none",transition:"all 0.2s"}}>{item.name}</span>
+                      <div style={{flex:1}}>
+                        <span style={{fontSize:15,fontWeight:600,fontFamily:"'Baloo 2'",color:item.checked?SOFT:DARK,textDecoration:item.checked?"line-through":"none",transition:"all 0.2s"}}>{item.name}</span>
+                        {item.note && <div style={{fontSize:11,fontWeight:600,color:item.checked?SOFT:MID,fontFamily:"'Baloo 2'",marginTop:2,fontStyle:"italic"}}>📝 {item.note}</div>}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1407,7 +1510,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                     <>
                       <SL>{q?"Matching Meals":"Meals"}</SL>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
-                        {fMeals.map((item,idx)=><PantryCard key={item.id} item={item} usageCount={usage[item.id]?.count||0} colorIdx={idx} onToggle={()=>togglePantryItem(item.id)} onRemove={item.custom?()=>removeCustomPantryItem(item.id):null}/>)}
+                        {fMeals.map((item,idx)=><PantryCard key={item.id} item={item} usageCount={usage[item.id]?.count||0} colorIdx={idx} onToggle={()=>togglePantryItem(item.id)} onEdit={()=>setEditingItem(item.id)} onRemove={item.custom?()=>removeCustomPantryItem(item.id):null}/>)}
                       </div>
                     </>
                   )}
@@ -1415,7 +1518,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                     <>
                       <SL>{q?"Matching Items":"Snacks & Extras"}</SL>
                       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
-                        {fExtras.map((item,idx)=><PantryCard key={item.id} item={item} usageCount={usage[item.id]?.count||0} colorIdx={fMeals.length+idx} onToggle={()=>togglePantryItem(item.id)} onRemove={item.custom?()=>removeCustomPantryItem(item.id):null}/>)}
+                        {fExtras.map((item,idx)=><PantryCard key={item.id} item={item} usageCount={usage[item.id]?.count||0} colorIdx={fMeals.length+idx} onToggle={()=>togglePantryItem(item.id)} onEdit={()=>setEditingItem(item.id)} onRemove={item.custom?()=>removeCustomPantryItem(item.id):null}/>)}
                         {!q && stockFilter==="all" && (
                           <div onClick={()=>{setPantryModal(true);setNewName("");setNewEmoji("");setNewItemMeals(["breakfast","lunch","dinner","snack"]);}} className="card"
                             style={{background:"white",borderRadius:20,padding:"14px 6px 12px",textAlign:"center",border:"2.5px dashed #D6CFC4",boxShadow:CS}}>
@@ -1626,6 +1729,95 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             </div>
           </div>
         )}
+
+        {/* ── Edit Item Sheet ── */}
+        {editingItem && pantry[editingItem] && (() => {
+          const ei = pantry[editingItem];
+          return (
+            <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.5)",zIndex:60,display:"flex",alignItems:"flex-end"}}>
+              <div style={{background:CREAM,width:"100%",borderRadius:"28px 28px 0 0",padding:"24px 22px 52px",animation:"slideUp 0.28s ease",boxShadow:"0 -8px 40px rgba(0,0,0,0.15)"}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+                  <h3 style={{fontSize:18,fontWeight:800,fontFamily:"'Baloo 2'",color:DARK}}>Edit Item</h3>
+                  <button onClick={()=>setEditingItem(null)} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:SOFT}}>✕</button>
+                </div>
+
+                {/* Emoji + Name */}
+                <div style={{display:"flex",gap:10,marginBottom:16}}>
+                  <input defaultValue={ei.emoji} id="ei-emoji" placeholder="🍽️" maxLength={2}
+                    style={{width:58,padding:"12px",borderRadius:14,border:"2px solid #EDE5DA",fontSize:24,textAlign:"center",outline:"none",background:"white"}}/>
+                  <input defaultValue={ei.name} id="ei-name" placeholder="Item name…"
+                    style={{flex:1,padding:"12px 16px",borderRadius:14,border:`2px solid ${PT.g1}`,fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white"}}/>
+                </div>
+
+                {/* Photo upload */}
+                <div style={{marginBottom:16}}>
+                  <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.06em"}}>Photo (optional)</p>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    {ei.photo
+                      ? <img src={ei.photo} alt={ei.name} style={{width:52,height:52,borderRadius:14,objectFit:"cover",border:`2px solid ${PT.g1}`}}/>
+                      : <div style={{width:52,height:52,borderRadius:14,background:"#F0EDE8",border:"2px dashed #D6CFC4",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22}}>{ei.emoji}</div>
+                    }
+                    <label className="btn" style={{flex:1,padding:"11px 16px",borderRadius:14,border:`2px solid ${PT.g1}`,background:PT.light,color:PT.text,fontSize:13,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer",textAlign:"center"}}>
+                      {ei.photo?"Change Photo 📷":"Add Photo 📷"}
+                      <input type="file" accept="image/*" style={{display:"none"}} onChange={e=>{
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => {
+                          // Compress via canvas
+                          const img = new Image();
+                          img.onload = () => {
+                            const canvas = document.createElement("canvas");
+                            const MAX = 200;
+                            const scale = Math.min(MAX/img.width, MAX/img.height, 1);
+                            canvas.width  = Math.round(img.width*scale);
+                            canvas.height = Math.round(img.height*scale);
+                            canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+                            setPantry(prev=>({...prev,[editingItem]:{...prev[editingItem],photo:canvas.toDataURL("image/jpeg",0.7)}}));
+                          };
+                          img.src = ev.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                      }}/>
+                    </label>
+                    {ei.photo && <button onClick={()=>setPantry(prev=>({...prev,[editingItem]:{...prev[editingItem],photo:undefined}}))} className="btn"
+                      style={{padding:"11px 14px",borderRadius:14,border:"2px solid #FECACA",background:"#FEF2F2",color:"#DC2626",fontSize:12,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>Remove</button>}
+                  </div>
+                </div>
+
+                {/* Meal tags */}
+                <div style={{marginBottom:20}}>
+                  <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.06em"}}>Meal Tags</p>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {[...Object.entries(MEALS),["snack",{label:"Snack",emoji:"🍿"}]].map(([key,mx])=>{
+                      const on = ei.meals?.includes(key);
+                      return (
+                        <button key={key} onClick={()=>{
+                          const next = on ? ei.meals.filter(x=>x!==key) : [...(ei.meals||[]),key];
+                          setPantry(prev=>({...prev,[editingItem]:{...prev[editingItem],meals:next}}));
+                        }} className="btn" style={{padding:"6px 14px",borderRadius:50,border:`2px solid ${on?DARK:"#EDE5DA"}`,background:on?DARK:"white",color:on?"white":MID,fontSize:13,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+                          {mx.emoji} {mx.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Save */}
+                <button onClick={()=>{
+                  const name  = document.getElementById("ei-name")?.value.trim();
+                  const emoji = document.getElementById("ei-emoji")?.value.trim();
+                  editPantryItem(editingItem, {
+                    ...(name  ? {name}  : {}),
+                    ...(emoji ? {emoji} : {}),
+                  });
+                }} className="btn" style={{width:"100%",padding:"15px",borderRadius:18,border:"none",background:`linear-gradient(135deg,${PT.g1},${PT.g2})`,color:"white",fontSize:15,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 18px ${PT.shadow}`}}>
+                  Save Changes ✓
+                </button>
+              </div>
+            </div>
+          );
+        })()}
       </div>
     );
   }

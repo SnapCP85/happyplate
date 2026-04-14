@@ -93,6 +93,9 @@ const MENU_CATS = [
   {id:"dessert", label:"Dessert",   icon:"🍦"},
 ];
 
+// Resolve an item's category — user-set wins over the built-in default.
+const getCat = item => item?.category || ITEM_CAT[item?.id] || (item?.isSetMeal ? "main" : "side");
+
 /* ─── KID AVATARS ─── */
 const AVATARS = [
   {id:"dino",  emoji:"🦕", label:"Dino"},
@@ -683,6 +686,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const [newName,       setNewName]       = useState("");
   const [newEmoji,      setNewEmoji]      = useState("");
   const [newItemMeals,  setNewItemMeals]  = useState(["breakfast","lunch","dinner","snack"]);
+  const [newItemCategory,setNewItemCategory]=useState("side");
   const [groceryList,   setGroceryList]   = useState(d.groceryList || []);
   const [groceryInput,  setGroceryInput]  = useState("");
   const [copied,        setCopied]        = useState(false);
@@ -843,8 +847,8 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   function addCustomPantryItem() {
     if (!newName.trim()) return;
     const id = `cp${Date.now()}`;
-    setPantry(prev=>({...prev,[id]:{id,name:newName.trim(),emoji:newEmoji.trim()||"✨",inStock:true,section:"extras",meals:newItemMeals.length>0?newItemMeals:["snack"],isSetMeal:false,custom:true}}));
-    setNewName(""); setNewEmoji(""); setNewItemMeals(["breakfast","lunch","dinner","snack"]); setPantryModal(false);
+    setPantry(prev=>({...prev,[id]:{id,name:newName.trim(),emoji:newEmoji.trim()||"✨",inStock:true,section:"extras",meals:newItemMeals.length>0?newItemMeals:["snack"],isSetMeal:false,custom:true,category:newItemCategory}}));
+    setNewName(""); setNewEmoji(""); setNewItemMeals(["breakfast","lunch","dinner","snack"]); setNewItemCategory("side"); setPantryModal(false);
   }
   /* ── Add an out-of-stock pantry item to the grocery list ── */
   function addPantryItemToGrocery(item) {
@@ -911,7 +915,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   function cookFromPantry() {
     const inStock = pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal));
     const pick = (cat) => {
-      const pool = inStock.filter(x=>ITEM_CAT[x.id]===cat);
+      const pool = inStock.filter(x=>getCat(x)===cat);
       if (!pool.length) return null;
       // prefer most-used
       return pool.sort((a,b)=>(usage[b.id]?.count||0)-(usage[a.id]?.count||0))[0];
@@ -1077,7 +1081,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     const customTonight = [...mealMenu.setMeals,...mealMenu.items].filter(x=>x.custom&&!pantryIds.has(x.id)&&x.active);
     const menuNames     = new Set([...mealMenu.setMeals,...mealMenu.items].filter(x=>x.active).map(x=>x.name.toLowerCase()));
     const commonForMeal = COMMON_ITEMS[meal]||[];
-    const getItemCat    = item => ITEM_CAT[item.id] || (item.isSetMeal ? "main" : "side");
+    const getItemCat    = item => getCat(item);
 
     // Build category steps — always show all 4, even if empty
     const SETUP_CATS = MENU_CATS; // main, side, drink, dessert
@@ -1410,9 +1414,9 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     // Always guided — 4 possible steps, skip empty ones
     const ALL_STEPS = [
       {id:"main",    label:"Pick your main 🍗",  items: activeSM,                                          optional:false},
-      {id:"side",    label:"Pick your sides 🥦",  items: activeIt.filter(x=>ITEM_CAT[x.id]==="side"),       optional:true},
-      {id:"drink",   label:"Pick a drink 🥛",     items: activeIt.filter(x=>ITEM_CAT[x.id]==="drink"),      optional:true},
-      {id:"dessert", label:"Want a treat? 🍦",    items: activeIt.filter(x=>ITEM_CAT[x.id]==="dessert"),    optional:true},
+      {id:"side",    label:"Pick your sides 🥦",  items: activeIt.filter(x=>getCat(x)==="side"),       optional:true},
+      {id:"drink",   label:"Pick a drink 🥛",     items: activeIt.filter(x=>getCat(x)==="drink"),      optional:true},
+      {id:"dessert", label:"Want a treat? 🍦",    items: activeIt.filter(x=>getCat(x)==="dessert"),    optional:true},
     ].filter(s=>s.items.length>0);
 
     const currentStep = ALL_STEPS[guidedStep];
@@ -1825,8 +1829,8 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                     const filtered = inStockItems.filter(item => {
                       if (q) return item.name.toLowerCase().includes(q);
                       if (snackFilter==="all") return true;
-                      if (snackFilter==="drink")   return ITEM_CAT[item.id]==="drink";
-                      if (snackFilter==="dessert")  return ITEM_CAT[item.id]==="dessert";
+                      if (snackFilter==="drink")   return getCat(item)==="drink";
+                      if (snackFilter==="dessert")  return getCat(item)==="dessert";
                       return item.meals?.includes(snackFilter);
                     });
                     if (filtered.length===0) return (
@@ -2117,6 +2121,15 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                 <input value={newName} onChange={e=>setNewName(e.target.value)} placeholder="Item name…" onKeyDown={e=>e.key==="Enter"&&addCustomPantryItem()} autoFocus style={{flex:1,padding:"12px 16px",borderRadius:14,border:"2px solid #EDE5DA",fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white"}}/>
               </div>
               <div style={{marginBottom:14}}>
+                <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginBottom:8}}>Category:</p>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  {MENU_CATS.map(c=>{
+                    const on = newItemCategory===c.id;
+                    return <button key={c.id} onClick={()=>setNewItemCategory(c.id)} className="btn" style={{padding:"6px 14px",borderRadius:50,border:`2px solid ${on?DARK:"#EDE5DA"}`,background:on?DARK:"white",color:on?"white":MID,fontSize:13,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>{c.icon} {c.label}</button>;
+                  })}
+                </div>
+              </div>
+              <div style={{marginBottom:14}}>
                 <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginBottom:8}}>Tag for meals:</p>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   {Object.entries(MEALS).concat([["snack",{label:"Snack",emoji:"🍿"}]]).map(([key,mx])=>{
@@ -2185,6 +2198,21 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                     </label>
                     {ei.photo && <button onClick={()=>setPantry(prev=>({...prev,[editingItem]:{...prev[editingItem],photo:undefined}}))} className="btn"
                       style={{padding:"11px 14px",borderRadius:14,border:"2px solid #FECACA",background:"#FEF2F2",color:"#DC2626",fontSize:12,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>Remove</button>}
+                  </div>
+                </div>
+
+                {/* Category */}
+                <div style={{marginBottom:16}}>
+                  <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:700,marginBottom:8,textTransform:"uppercase",letterSpacing:"0.06em"}}>Category</p>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {MENU_CATS.map(c=>{
+                      const on = getCat(ei)===c.id;
+                      return (
+                        <button key={c.id} onClick={()=>setPantry(prev=>({...prev,[editingItem]:{...prev[editingItem],category:c.id}}))} className="btn" style={{padding:"6px 14px",borderRadius:50,border:`2px solid ${on?DARK:"#EDE5DA"}`,background:on?DARK:"white",color:on?"white":MID,fontSize:13,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+                          {c.icon} {c.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 

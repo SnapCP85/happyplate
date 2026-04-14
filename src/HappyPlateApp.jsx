@@ -911,32 +911,6 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   /* ── flow ── */
   function handleCreateMeal() { syncMenuFromPantry(meal); setSetupStep(0); setScreen("parentSetup"); }
 
-  /* ── 2.6: Cook from pantry — auto-pick one balanced item per category ── */
-  function cookFromPantry() {
-    const inStock = pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal));
-    const pick = (cat) => {
-      const pool = inStock.filter(x=>getCat(x)===cat);
-      if (!pool.length) return null;
-      // prefer most-used
-      return pool.sort((a,b)=>(usage[b.id]?.count||0)-(usage[a.id]?.count||0))[0];
-    };
-    const main    = pick("main");
-    const side    = pick("side");
-    const drink   = pick("drink");
-    const dessert = pick("dessert");
-    const chosen  = [main,side,drink,dessert].filter(Boolean);
-    if (chosen.length===0) { syncMenuFromPantry(meal); setScreen("parentSetup"); return; }
-    // Build a menu with just these items
-    setMenu(prev=>({
-      ...prev,
-      [meal]:{
-        setMeals: chosen.filter(x=>x.isSetMeal).map(x=>({...x,active:true})),
-        items:    chosen.filter(x=>!x.isSetMeal).map(x=>({...x,active:true})),
-      }
-    }));
-    setPlate([]);
-    setScreen("kidPlate");
-  }
   function handleDone() {
     if (plate.length>0) trackUsage(plate);
     setShowConfetti(true);
@@ -1039,23 +1013,6 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             Create {m.label} →
           </button>
         </div>
-
-        {/* Cook from pantry shortcut — 2.6 */}
-        {pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal)).length >= 2 && (
-          <div style={{padding:"10px 20px 0"}}>
-            <div onClick={cookFromPantry} className="btn"
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 18px",borderRadius:18,background:m.light,border:`1.5px solid ${m.g1}44`,boxShadow:CS,cursor:"pointer"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:20}}>⚡</span>
-                <div>
-                  <div style={{fontSize:13,fontWeight:800,color:m.text,fontFamily:"'Baloo 2'"}}>Cook from pantry</div>
-                  <div style={{fontSize:11,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>Auto-pick a balanced {m.label.toLowerCase()}</div>
-                </div>
-              </div>
-              <span style={{fontSize:13,fontWeight:700,color:m.text,fontFamily:"'Baloo 2'"}}>Go →</span>
-            </div>
-          </div>
-        )}
 
         {/* Snack time shortcut */}
         <div style={{padding:"10px 20px 0"}}>

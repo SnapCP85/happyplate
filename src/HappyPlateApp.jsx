@@ -747,10 +747,10 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     setMenu(prev=>{
       const curr = prev[mealKey];
       const existIds = new Set([...curr.setMeals,...curr.items].map(x=>x.id));
-      const newSM = tagged.filter(x=>x.isSetMeal&&!existIds.has(x.id)).map(x=>({...x,active:true}));
-      const newIt = tagged.filter(x=>!x.isSetMeal&&!existIds.has(x.id)).map(x=>({...x,active:true}));
-      const updSM = curr.setMeals.map(x=>{const pi=pantry[x.id];return pi?.meals?.includes(mealKey)?{...x,active:pi.inStock}:x;});
-      const updIt = curr.items.map(x=>{const pi=pantry[x.id];return pi?.meals?.includes(mealKey)?{...x,active:pi.inStock}:x;});
+      const newSM = tagged.filter(x=>x.isSetMeal&&!existIds.has(x.id)).map(x=>({...x,active:false}));
+      const newIt = tagged.filter(x=>!x.isSetMeal&&!existIds.has(x.id)).map(x=>({...x,active:false}));
+      const updSM = curr.setMeals.map(x=>{const pi=pantry[x.id];return pi&&!pi.inStock?{...x,active:false}:x;});
+      const updIt = curr.items.map(x=>{const pi=pantry[x.id];return pi&&!pi.inStock?{...x,active:false}:x;});
       return {...prev,[mealKey]:{setMeals:[...updSM,...newSM],items:[...updIt,...newIt]}};
     });
   }

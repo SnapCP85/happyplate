@@ -93,6 +93,32 @@ const MENU_CATS = [
   {id:"dessert", label:"Dessert",   icon:"🍦"},
 ];
 
+/* ─── KID AVATARS ─── */
+const AVATARS = [
+  {id:"dino",  emoji:"🦕", label:"Dino"},
+  {id:"star",  emoji:"⭐", label:"Star"},
+  {id:"rocket",emoji:"🚀", label:"Rocket"},
+  {id:"uni",   emoji:"🦄", label:"Unicorn"},
+  {id:"dog",   emoji:"🐶", label:"Pup"},
+  {id:"cat",   emoji:"🐱", label:"Kitty"},
+  {id:"bear",  emoji:"🐻", label:"Bear"},
+  {id:"lion",  emoji:"🦁", label:"Lion"},
+  {id:"dragon",emoji:"🐲", label:"Dragon"},
+  {id:"bunny", emoji:"🐰", label:"Bunny"},
+  {id:"owl",   emoji:"🦉", label:"Owl"},
+  {id:"penguin",emoji:"🐧",label:"Penguin"},
+];
+const KID_COLORS = [
+  {id:"orange", bg:"#FFF4EE", ring:"#FF6B35", text:"#C2410C"},
+  {id:"blue",   bg:"#EFF6FF", ring:"#3B82F6", text:"#1D4ED8"},
+  {id:"green",  bg:"#F0FDF4", ring:"#22C55E", text:"#15803D"},
+  {id:"purple", bg:"#F5F3FF", ring:"#8B5CF6", text:"#6D28D9"},
+  {id:"pink",   bg:"#FDF2F8", ring:"#EC4899", text:"#BE185D"},
+  {id:"yellow", bg:"#FEFCE8", ring:"#EAB308", text:"#A16207"},
+  {id:"teal",   bg:"#F0FDFA", ring:"#14B8A6", text:"#0F766E"},
+  {id:"red",    bg:"#FFF1F2", ring:"#F43F5E", text:"#BE123C"},
+];
+
 const COMMON_ITEMS = {
   breakfast: [
     {name:"Pancakes",emoji:"🥞"},{name:"Waffles",emoji:"🧇"},{name:"French Toast",emoji:"🍞"},
@@ -143,12 +169,15 @@ const PALS = [
 ];
 
 const ENC = [
-  {msg:"Tap something yummy! 👇",sub:""},
-  {msg:"Great pick! 🌟",sub:"What else sounds good?"},
-  {msg:"Ooh, tasty! 😋",sub:"Keep building your plate!"},
-  {msg:"Looking delicious! 🔥",sub:"Add more if you want!"},
-  {msg:"Almost ready! 🎉",sub:"Tap done whenever!"},
-  {msg:"What a plate! 😍",sub:"Ready whenever you are!"},
+  {msg:"Tap something yummy! 👇",       sub:""},
+  {msg:"Great pick! 🌟",                sub:"What else sounds good?"},
+  {msg:"Ooh, tasty! 😋",               sub:"Keep building your plate!"},
+  {msg:"Looking delicious! 🔥",         sub:"Add more if you want!"},
+  {msg:"That's a great plate! 🎉",      sub:"Almost done!"},
+  {msg:"What a meal! 😍",               sub:"Ready whenever you are!"},
+  {msg:"So much yumminess! 🤤",         sub:"Tap done when you're ready!"},
+  {msg:"Wow, what a feast! 👑",         sub:"You really went for it!"},
+  {msg:"You're a master chef! 🍴",      sub:"Tap done whenever!"},
 ];
 
 const ROTS = [2.2,-1.8,2.8,-2.2,1.5,-2.8,1.8,-1.5,2.5,-2];
@@ -472,24 +501,58 @@ function InsightsView({pantry,usage}) {
 }
 
 /* ─── ONBOARDING ─── */
+function AvatarPicker({kid, onChange}) {
+  const pal = KID_COLORS.find(c=>c.id===kid.color)||KID_COLORS[0];
+  return (
+    <div style={{background:"white",borderRadius:24,padding:"18px 16px",boxShadow:CS,marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
+        <div style={{width:52,height:52,borderRadius:16,background:pal.bg,border:`3px solid ${pal.ring}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:28,flexShrink:0,boxShadow:`0 4px 14px ${pal.ring}44`}}>
+          {AVATARS.find(a=>a.id===kid.avatar)?.emoji||"⭐"}
+        </div>
+        <div>
+          <div style={{fontSize:16,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{kid.name}</div>
+          <div style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>Pick an avatar &amp; color</div>
+        </div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:8,marginBottom:12}}>
+        {AVATARS.map(a=>(
+          <div key={a.id} onClick={()=>onChange({...kid,avatar:a.id})} className="card"
+            style={{aspectRatio:"1",borderRadius:14,background:kid.avatar===a.id?pal.bg:"#F8F5F0",border:`2.5px solid ${kid.avatar===a.id?pal.ring:"#EDE5DA"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,cursor:"pointer",transition:"all 0.18s",boxShadow:kid.avatar===a.id?`0 4px 12px ${pal.ring}44`:CS}}>
+            {a.emoji}
+          </div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {KID_COLORS.map(c=>(
+          <div key={c.id} onClick={()=>onChange({...kid,color:c.id})} className="card"
+            style={{width:28,height:28,borderRadius:"50%",background:c.ring,border:`3px solid ${kid.color===c.id?"white":"transparent"}`,boxShadow:kid.color===c.id?`0 0 0 3px ${c.ring},0 4px 12px ${c.ring}66`:"0 2px 4px rgba(0,0,0,0.15)",cursor:"pointer",transition:"all 0.18s",flexShrink:0}}>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function OnboardingOverlay({onDone}) {
-  const [step, setStep] = useState(0); // 0=welcome, 1=kids
+  const [step,     setStep]     = useState(0); // 0=welcome 1=names 2=avatars
   const [kidInput, setKidInput] = useState("");
-  const [kidNames, setKidNames] = useState([]);
+  const [kidProfs, setKidProfs] = useState([]); // [{name,avatar,color}]
 
   function addKid() {
     const name = kidInput.trim();
-    if (!name || kidNames.includes(name)) return;
-    setKidNames(prev => [...prev, name]);
+    if (!name || kidProfs.some(k=>k.name===name)) return;
+    const idx = kidProfs.length;
+    setKidProfs(prev=>[...prev,{name,avatar:AVATARS[idx%AVATARS.length].id,color:KID_COLORS[idx%KID_COLORS.length].id}]);
     setKidInput("");
   }
 
   return (
-    <div style={{...shell, background:CREAM}}>
+    <div style={{...shell,background:CREAM}}>
       <style>{CSS}</style>
       <div style={{position:"absolute",inset:0,background:`radial-gradient(ellipse at 50% 0%,${BL} 0%,transparent 60%)`,pointerEvents:"none"}}/>
 
-      {step===0 ? (
+      {/* Step 0 — Welcome */}
+      {step===0 && (
         <>
           <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"32px 36px 16px",position:"relative"}}>
             <div style={{animation:"logoSpring 0.7s cubic-bezier(0.34,1.56,0.64,1)",display:"flex",justifyContent:"center",marginBottom:28}}>
@@ -508,36 +571,69 @@ function OnboardingOverlay({onDone}) {
             </button>
           </div>
         </>
-      ) : (
+      )}
+
+      {/* Step 1 — Kids names */}
+      {step===1 && (
         <>
           <div style={{flex:1,display:"flex",flexDirection:"column",padding:"52px 28px 16px",position:"relative",animation:"slideIn 0.35s ease"}}>
-            <div style={{textAlign:"center",marginBottom:28}}>
-              <div style={{fontSize:68,lineHeight:1,marginBottom:16}}>👧🧒</div>
-              <h1 style={{fontSize:26,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginBottom:10}}>Who's at the table?</h1>
-              <p style={{fontSize:14,color:MID,fontFamily:"'Baloo 2'",lineHeight:1.65,maxWidth:280,margin:"0 auto"}}>
-                Add your kids' names — their plates will be labeled. You can always add more later.
+            <div style={{textAlign:"center",marginBottom:24}}>
+              <div style={{fontSize:64,lineHeight:1,marginBottom:14}}>👧🧒</div>
+              <h1 style={{fontSize:26,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginBottom:8}}>Who's at the table?</h1>
+              <p style={{fontSize:14,color:MID,fontFamily:"'Baloo 2'",lineHeight:1.6,maxWidth:280,margin:"0 auto"}}>
+                Add your kids' names — each one gets their own plate.
               </p>
             </div>
             <div style={{display:"flex",gap:8,marginBottom:14}}>
               <input value={kidInput} onChange={e=>setKidInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addKid()} placeholder="Enter a name…" autoFocus style={{flex:1,padding:"13px 16px",borderRadius:16,border:"2px solid #EDE5DA",fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white",boxShadow:CS}}/>
               <button onClick={addKid} className="btn" style={{padding:"13px 18px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${B},${BG})`,color:"white",fontSize:20,cursor:"pointer",flexShrink:0,boxShadow:`0 4px 16px ${B}44`}}>＋</button>
             </div>
-            {kidNames.length>0 ? (
+            {kidProfs.length>0 ? (
               <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:12}}>
-                {kidNames.map(name => (
-                  <div key={name} style={{display:"flex",alignItems:"center",gap:6,background:BL,border:`2px solid ${B}`,borderRadius:50,padding:"6px 14px 6px 16px"}}>
-                    <span style={{fontSize:14,fontWeight:700,color:"#92400E",fontFamily:"'Baloo 2'"}}>{name}</span>
-                    <button onClick={()=>setKidNames(prev=>prev.filter(n=>n!==name))} style={{background:"none",border:"none",cursor:"pointer",color:B,fontSize:14,fontWeight:800,padding:0,lineHeight:1}}>✕</button>
-                  </div>
-                ))}
+                {kidProfs.map((k,i) => {
+                  const pal=KID_COLORS.find(c=>c.id===k.color)||KID_COLORS[0];
+                  const av=AVATARS.find(a=>a.id===k.avatar);
+                  return (
+                    <div key={i} style={{display:"flex",alignItems:"center",gap:6,background:pal.bg,border:`2px solid ${pal.ring}`,borderRadius:50,padding:"5px 12px 5px 8px"}}>
+                      <span style={{fontSize:18}}>{av?.emoji}</span>
+                      <span style={{fontSize:14,fontWeight:700,color:pal.text,fontFamily:"'Baloo 2'"}}>{k.name}</span>
+                      <button onClick={()=>setKidProfs(prev=>prev.filter((_,j)=>j!==i))} style={{background:"none",border:"none",cursor:"pointer",color:pal.ring,fontSize:14,fontWeight:800,padding:0,lineHeight:1,marginLeft:2}}>✕</button>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
-              <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,textAlign:"center"}}>Tap + to add a name, or skip.</p>
+              <p style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,textAlign:"center"}}>Tap + to add, or skip for now.</p>
             )}
           </div>
+          <div style={{padding:"0 28px 52px",position:"relative",display:"flex",flexDirection:"column",gap:12}}>
+            {kidProfs.length>0 && (
+              <button onClick={()=>setStep(2)} className="btn" style={{width:"100%",padding:"18px",border:"none",borderRadius:22,background:`linear-gradient(135deg,${B},${BG})`,color:"white",fontSize:17,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 8px 28px ${B}55`}}>
+                Pick avatars →
+              </button>
+            )}
+            <button onClick={()=>onDone(kidProfs)} className="btn" style={{width:"100%",padding:"14px",border:"2px solid #EDE5DA",borderRadius:22,background:"white",color:MID,fontSize:15,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+              {kidProfs.length>0?"Skip avatars →":"Skip for now →"}
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Step 2 — Avatars */}
+      {step===2 && (
+        <>
+          <div style={{flex:1,overflow:"auto",padding:"52px 24px 16px",position:"relative",animation:"slideIn 0.35s ease"}}>
+            <div style={{textAlign:"center",marginBottom:20}}>
+              <h1 style={{fontSize:24,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginBottom:6}}>Pick their look! 🎨</h1>
+              <p style={{fontSize:13,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600}}>Each kid gets an emoji avatar and a color.</p>
+            </div>
+            {kidProfs.map((kid,i)=>(
+              <AvatarPicker key={i} kid={kid} onChange={updated=>setKidProfs(prev=>prev.map((k,j)=>j===i?updated:k))}/>
+            ))}
+          </div>
           <div style={{padding:"0 28px 52px",position:"relative"}}>
-            <button onClick={()=>onDone(kidNames)} className="btn" style={{width:"100%",padding:"18px",border:"none",borderRadius:22,background:`linear-gradient(135deg,${B},${BG})`,color:"white",fontSize:17,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 8px 28px ${B}55`}}>
-              {kidNames.length>0 ? "Let's Eat! 🎉" : "Skip for now →"}
+            <button onClick={()=>onDone(kidProfs)} className="btn" style={{width:"100%",padding:"18px",border:"none",borderRadius:22,background:`linear-gradient(135deg,${B},${BG})`,color:"white",fontSize:17,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 8px 28px ${B}55`}}>
+              Let's Eat! 🎉
             </button>
           </div>
         </>
@@ -555,7 +651,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
 
   const [screen,        setScreen]        = useState("home");
   const [showOnboarding,setShowOnboarding]= useState(d.showOnboarding !== false);
-  const [kids,          setKids]          = useState(d.kids || []);
+  const [kids,          setKids]          = useState(d.kids || []);  // [{name,avatar,color}] or ["name"] legacy
   const [meal,          setMeal]          = useState(activeMeal());
   const [menu,          setMenu]          = useState(d.menu || makeInitialMenu);
   const [pantry,        setPantry]        = useState(d.pantry || makeInitialPantry);
@@ -573,8 +669,9 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const [pantryPrompt,  setPantryPrompt]  = useState(null);
   const [customItemName,setCustomItemName]= useState("");
   const [customItemEmoji,setCustomItemEmoji]=useState("");
-  const [editingItem,   setEditingItem]   = useState(null);  // pantry item id being edited
-  const [noteTarget,    setNoteTarget]    = useState(null);  // plateKey getting a note
+  const [pickerSelections, setPickerSelections] = useState([]); // items staged in picker before confirm
+  const [editingItem,   setEditingItem]   = useState(null);
+  const [noteTarget,    setNoteTarget]    = useState(null);
   const [noteText,      setNoteText]      = useState("");
   const [pantryView,    setPantryView]    = useState("snack");
   const [stockFilter,   setStockFilter]   = useState("all");
@@ -593,8 +690,9 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const [snackPicks,    setSnackPicks]    = useState([]);
   const [snackDone,     setSnackDone]     = useState(false);
   const [pantryExplained,setPantryExplained]=useState(d.pantryExplained===true);
-  const [homeTourSeen,  setHomeTourSeen]  =useState(d.homeTourSeen===true);
   const [saveStatus,    setSaveStatus]    = useState("idle");
+  const [guidedStep,    setGuidedStep]    = useState(0);      // kid plate guided step
+  const [setupStep,     setSetupStep]     = useState(0);      // parent setup guided step
 
   /* ── auto-save ── */
   useEffect(() => {
@@ -602,11 +700,11 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     if (saveRef.current) clearTimeout(saveRef.current);
     setSaveStatus("saving");
     saveRef.current = setTimeout(() => {
-      onStateChange({showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained,homeTourSeen});
+      onStateChange({showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained});
       setSaveStatus("saved");
       setTimeout(()=>setSaveStatus("idle"),2000);
     }, 1800);
-  }, [showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained,homeTourSeen]);
+  }, [showOnboarding,kids,menu,pantry,usage,templates,groceryList,pantryExplained]);
 
   /* ── derived ── */
   const m          = MEALS[meal];
@@ -623,6 +721,18 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   const oosNotOnList    = outOfStockItems.filter(x=>!groceryList.some(g=>g.pantryId===x.id));
   const groceryBadge    = oosNotOnList.length + groceryList.filter(x=>!x.checked).length;
   const greet           = timeGreeting();
+
+  // Normalize kids — support both legacy string[] and new profile[]
+  const kidProfiles = kids.map(k => typeof k==="string" ? {name:k, avatar:"star", color:"orange"} : k);
+  function kidProfile(idx) { return kidProfiles[idx] || null; }
+  function kidColor(idx) {
+    const kp = kidProfile(idx);
+    return KID_COLORS.find(c=>c.id===kp?.color) || KID_COLORS[0];
+  }
+  function kidAvatar(idx) {
+    const kp = kidProfile(idx);
+    return AVATARS.find(a=>a.id===kp?.avatar)?.emoji || "⭐";
+  }
 
   /* ── menu ── */
   function toggleMenuItem(type,id) { setMenu(prev=>({...prev,[meal]:{...prev[meal],[type]:prev[meal][type].map(x=>x.id===id?{...x,active:!x.active}:x)}})); }
@@ -646,8 +756,36 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
     const newItem = inPantry ? {...inPantry,active:true} : {id:`t${Date.now()}`,name:item.name,emoji:item.emoji,active:true,custom:true};
     const type = (COMMON_ITEMS[meal]||[]).slice(0,10).some(x=>x.name===item.name) ? "setMeals" : "items";
     setMenu(prev=>({...prev,[meal]:{...prev[meal],[type]:[...prev[meal][type].filter(x=>x.name.toLowerCase()!==item.name.toLowerCase()),newItem]}}));
-    setAddItemSheet(false); setCustomItemName(""); setCustomItemEmoji("");
     if (!inPantry) setPantryPrompt({item,meal});
+  }
+
+  function confirmPickerSelections() {
+    // Add all staged picker items to menu
+    for (const item of pickerSelections) {
+      addItemTonight(item);
+    }
+    // If custom name typed, add that too
+    if (customItemName.trim()) {
+      addItemTonight({name:customItemName.trim(), emoji:customItemEmoji.trim()||"✨"});
+    }
+    setPickerSelections([]);
+    setAddItemSheet(false);
+    setCustomItemName(""); setCustomItemEmoji("");
+  }
+
+  function togglePickerItem(item) {
+    const already = pickerSelections.some(x=>x.name.toLowerCase()===item.name.toLowerCase());
+    if (already) {
+      setPickerSelections(prev=>prev.filter(x=>x.name.toLowerCase()!==item.name.toLowerCase()));
+    } else {
+      setPickerSelections(prev=>[...prev, item]);
+    }
+  }
+
+  function closeAddItemSheet() {
+    setAddItemSheet(false);
+    setPickerSelections([]);
+    setCustomItemName(""); setCustomItemEmoji("");
   }
 
   function removeFromMenuByName(name) {
@@ -753,10 +891,12 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
 
   /* ── plate ── */
   function addToPlate(item) {
-    if (plate.some(p=>p.id===item.id)) return;
-    setPlate(prev=>[...prev,{...item,plateKey:Date.now()+Math.random()}]);
+    if (plate.some(p=>p.id===item.id)) return null;
+    const plateKey = Date.now()+Math.random();
+    setPlate(prev=>[...prev,{...item,plateKey}]);
     setWiggle(true); setTimeout(()=>setWiggle(false),520);
     setSpark(true); setTimeout(()=>setSpark(false),600);
+    return plateKey;
   }
   function removeFromPlate(plateKey) {
     setRemovingIds(prev=>new Set([...prev,plateKey]));
@@ -765,7 +905,34 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   function togglePlateItem(item) { const on=plate.find(p=>p.id===item.id);if(on)removeFromPlate(on.plateKey);else addToPlate(item); }
 
   /* ── flow ── */
-  function handleCreateMeal() { syncMenuFromPantry(meal); setScreen("parentSetup"); }
+  function handleCreateMeal() { syncMenuFromPantry(meal); setSetupStep(0); setScreen("parentSetup"); }
+
+  /* ── 2.6: Cook from pantry — auto-pick one balanced item per category ── */
+  function cookFromPantry() {
+    const inStock = pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal));
+    const pick = (cat) => {
+      const pool = inStock.filter(x=>ITEM_CAT[x.id]===cat);
+      if (!pool.length) return null;
+      // prefer most-used
+      return pool.sort((a,b)=>(usage[b.id]?.count||0)-(usage[a.id]?.count||0))[0];
+    };
+    const main    = pick("main");
+    const side    = pick("side");
+    const drink   = pick("drink");
+    const dessert = pick("dessert");
+    const chosen  = [main,side,drink,dessert].filter(Boolean);
+    if (chosen.length===0) { syncMenuFromPantry(meal); setScreen("parentSetup"); return; }
+    // Build a menu with just these items
+    setMenu(prev=>({
+      ...prev,
+      [meal]:{
+        setMeals: chosen.filter(x=>x.isSetMeal).map(x=>({...x,active:true})),
+        items:    chosen.filter(x=>!x.isSetMeal).map(x=>({...x,active:true})),
+      }
+    }));
+    setPlate([]);
+    setScreen("kidPlate");
+  }
   function handleDone() {
     if (plate.length>0) trackUsage(plate);
     setShowConfetti(true);
@@ -774,9 +941,12 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
   }
   function approveAndCook() {
     const idx = cookingOrder.length;
-    const label = kids[idx] ? kids[idx] : idx===0 ? "Plate 1" : "Guest";
-    setCookingOrder(prev=>[...prev,{id:Date.now(),label,items:plate.map(it=>({...it,checked:false}))}]);
-    setPlate([]); setScreen("cooking");
+    const kp  = kidProfile(idx);
+    const label = kp?.name || (idx===0 ? "Plate 1" : "Guest");
+    const avatar = kidAvatar(idx);
+    const color  = (KID_COLORS.find(c=>c.id===kp?.color)||KID_COLORS[0]);
+    setCookingOrder(prev=>[...prev,{id:Date.now(),label,avatar,color,items:plate.map(it=>({...it,checked:false}))}]);
+    setPlate([]); setGuidedStep(0); setScreen("cooking");
   }
   function toggleCookingItem(pid,iid) { setCookingOrder(prev=>prev.map(p=>p.id===pid?{...p,items:p.items.map(x=>x.id===iid?{...x,checked:!x.checked}:x)}:p)); }
   function finishCooking() { setCookingOrder([]); setScreen("home"); }
@@ -794,7 +964,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
 
   /* ════════════════════ SCREENS ════════════════════ */
 
-  if (showOnboarding) return <OnboardingOverlay onDone={names=>{setKids(names);setShowOnboarding(false);}}/>;
+  if (showOnboarding) return <OnboardingOverlay onDone={profiles=>{setKids(profiles);setShowOnboarding(false);}}/>;
 
   /* ── HOME ── */
   if (screen==="home") return (
@@ -802,16 +972,19 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
       <style>{CSS}</style>
 
       {/* Cooking banner */}
-      {cookingOrder.length>0 && (
-        <div onClick={()=>setScreen("cooking")} className="card" style={{background:`linear-gradient(135deg,${GR1},${GR2})`,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,boxShadow:`0 4px 16px rgba(22,163,74,0.35)`,animation:"bannerIn 0.35s ease",flexShrink:0}}>
-          <span style={{fontSize:24}}>🍳</span>
-          <div style={{flex:1}}>
-            <div style={{fontSize:14,fontWeight:800,color:"white",fontFamily:"'Baloo 2'"}}>{kids[0]||"Plate 1"}'s {m.label} is cooking</div>
-            <div style={{fontSize:11,color:"rgba(255,255,255,0.8)",fontFamily:"'Baloo 2'",marginTop:1}}>Tap to open checklist</div>
+      {cookingOrder.length>0 && (() => {
+        const pal = kidColor(0);
+        return (
+          <div onClick={()=>setScreen("cooking")} className="card" style={{background:`linear-gradient(135deg,${GR1},${GR2})`,padding:"12px 20px",display:"flex",alignItems:"center",gap:12,boxShadow:`0 4px 16px rgba(22,163,74,0.35)`,animation:"bannerIn 0.35s ease",flexShrink:0}}>
+            <div style={{width:36,height:36,borderRadius:12,background:"rgba(255,255,255,0.2)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>{kidAvatar(0)}</div>
+            <div style={{flex:1}}>
+              <div style={{fontSize:14,fontWeight:800,color:"white",fontFamily:"'Baloo 2'"}}>{kidProfiles[0]?.name||"Plate 1"}'s {m.label} is cooking</div>
+              <div style={{fontSize:11,color:"rgba(255,255,255,0.8)",fontFamily:"'Baloo 2'",marginTop:1}}>Tap to open checklist</div>
+            </div>
+            <div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",fontSize:12,fontWeight:800,color:"white",fontFamily:"'Baloo 2'"}}>View →</div>
           </div>
-          <div style={{background:"rgba(255,255,255,0.2)",borderRadius:50,padding:"4px 12px",fontSize:12,fontWeight:800,color:"white",fontFamily:"'Baloo 2'"}}>View →</div>
-        </div>
-      )}
+        );
+      })()}
 
       <div style={{flex:1,overflow:"auto",paddingBottom:24}}>
         {/* Header */}
@@ -841,74 +1014,6 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
           )}
         </div>
 
-        {/* First-time welcome card */}
-        {!homeTourSeen && (
-          <div style={{padding:"0 20px 22px",animation:"fadeUp 0.5s ease both"}}>
-            <div style={{
-              position:"relative",
-              background:"white",
-              border:"1px solid #F0E8DC",
-              borderRadius:22,
-              padding:"22px 22px 18px",
-              boxShadow:"0 1px 2px rgba(0,0,0,.04), 0 12px 36px rgba(26,20,16,.07)",
-            }}>
-              <div style={{marginBottom:18}}>
-                <div style={{fontSize:10,fontWeight:800,color:B,fontFamily:"'Baloo 2'",letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:6}}>
-                  Getting started
-                </div>
-                <div style={{fontSize:19,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",lineHeight:1.2,letterSpacing:"-0.01em"}}>
-                  {kids[0]?`Welcome, ${kids[0]}'s family`:"Welcome to HappyPlate"}
-                </div>
-                <div style={{fontSize:13,fontWeight:500,color:MID,fontFamily:"'Baloo 2'",marginTop:4,lineHeight:1.5}}>
-                  Four quick steps and you're set.
-                </div>
-              </div>
-
-              <div style={{display:"flex",flexDirection:"column"}}>
-                {[
-                  {n:"1",title:"Pick a meal",desc:"Choose breakfast, lunch, dinner, or snack."},
-                  {n:"2",title:"Tap Create Meal",desc:"Set tonight's menu in under a minute. Save favorites as templates."},
-                  {n:"3",title:"Hand it to your kid",desc:"They build their plate, you review it — no debates."},
-                  {n:"4",title:"Stock the Pantry",desc:"Tap the Pantry button to track what's in. Out-of-stock items build your grocery list automatically."},
-                ].map((step, i, arr) => (
-                  <div key={step.n} style={{
-                    display:"flex",alignItems:"flex-start",gap:14,
-                    paddingBottom:i===arr.length-1?0:14,
-                    marginBottom:i===arr.length-1?0:14,
-                    borderBottom:i===arr.length-1?"none":"1px solid #F5EFE5",
-                  }}>
-                    <div style={{
-                      flexShrink:0,width:26,height:26,borderRadius:"50%",
-                      background:BL,color:B,
-                      fontSize:12,fontWeight:800,fontFamily:"'Baloo 2'",
-                      display:"flex",alignItems:"center",justifyContent:"center",
-                      letterSpacing:"-0.02em",
-                    }}>{step.n}</div>
-                    <div style={{flex:1,paddingTop:2}}>
-                      <div style={{fontSize:14,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",lineHeight:1.25,letterSpacing:"-0.005em"}}>
-                        {step.title}
-                      </div>
-                      <div style={{fontSize:12.5,fontWeight:500,color:MID,fontFamily:"'Baloo 2'",lineHeight:1.5,marginTop:3}}>
-                        {step.desc}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <button onClick={()=>setHomeTourSeen(true)} className="btn"
-                style={{
-                  width:"100%",marginTop:20,padding:"13px",border:"none",borderRadius:14,
-                  background:DARK,color:"white",
-                  fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",
-                  letterSpacing:"0.01em",
-                }}>
-                Let's get happy! 🎉
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Meal selector pills */}
         <div style={{padding:"0 20px",display:"flex",gap:10,justifyContent:"center",marginBottom:24}}>
           {Object.entries(MEALS).map(([key,mx]) => {
@@ -931,139 +1036,218 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
           </button>
         </div>
 
+        {/* Cook from pantry shortcut — 2.6 */}
+        {pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal)).length >= 2 && (
+          <div style={{padding:"10px 20px 0"}}>
+            <div onClick={cookFromPantry} className="btn"
+              style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 18px",borderRadius:18,background:m.light,border:`1.5px solid ${m.g1}44`,boxShadow:CS,cursor:"pointer"}}>
+              <div style={{display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:20}}>⚡</span>
+                <div>
+                  <div style={{fontSize:13,fontWeight:800,color:m.text,fontFamily:"'Baloo 2'"}}>Cook from pantry</div>
+                  <div style={{fontSize:11,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>Auto-pick a balanced {m.label.toLowerCase()}</div>
+                </div>
+              </div>
+              <span style={{fontSize:13,fontWeight:700,color:m.text,fontFamily:"'Baloo 2'"}}>Go →</span>
+            </div>
+          </div>
+        )}
+
         {/* Snack time shortcut */}
         <div style={{padding:"10px 20px 0"}}>
           <div onClick={()=>{setScreen("pantry");setPantryView("snack");}} className="btn"
             style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 18px",borderRadius:18,background:"white",border:"1.5px solid #EDE5DA",boxShadow:CS,cursor:"pointer"}}>
             <div style={{display:"flex",alignItems:"center",gap:10}}>
-              <span style={{fontSize:22}}>🍿</span>
-              <span style={{fontSize:14,fontWeight:700,color:MID,fontFamily:"'Baloo 2'"}}>Snack time?</span>
+              <span style={{fontSize:20}}>🍿</span>
+              <span style={{fontSize:13,fontWeight:700,color:MID,fontFamily:"'Baloo 2'"}}>Snack time?</span>
             </div>
             <span style={{fontSize:13,fontWeight:700,color:B,fontFamily:"'Baloo 2'"}}>Let them pick →</span>
           </div>
         </div>
 
-        {/* Subtle helper tip */}
-        <p style={{textAlign:"center",fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:16,padding:"0 24px"}}>
-          Choose a meal above and tap Create — takes 30 seconds.
-        </p>
+        <div style={{height:28}}/>
       </div>
     </div>
   );
 
   /* ── PARENT SETUP ── */
   if (screen==="parentSetup") {
-    const pantryForMeal  = pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal));
-    const pantryIds      = new Set(Object.keys(pantry));
-    const customTonight  = [...mealMenu.setMeals,...mealMenu.items].filter(x=>x.custom&&!pantryIds.has(x.id)&&x.active);
-    const menuNames      = new Set([...mealMenu.setMeals,...mealMenu.items].filter(x=>x.active).map(x=>x.name.toLowerCase()));
-    const commonForMeal  = COMMON_ITEMS[meal]||[];
-    const hasAnything    = pantryForMeal.length+customTonight.length > 0;
-    const canSkip        = pantryForMeal.length >= 2;
+    const pantryForMeal = pantryItems.filter(x=>x.inStock&&x.meals?.includes(meal));
+    const pantryIds     = new Set(Object.keys(pantry));
+    const customTonight = [...mealMenu.setMeals,...mealMenu.items].filter(x=>x.custom&&!pantryIds.has(x.id)&&x.active);
+    const menuNames     = new Set([...mealMenu.setMeals,...mealMenu.items].filter(x=>x.active).map(x=>x.name.toLowerCase()));
+    const commonForMeal = COMMON_ITEMS[meal]||[];
+    const getItemCat    = item => ITEM_CAT[item.id] || (item.isSetMeal ? "main" : "side");
+
+    // Build category steps — always show all 4, even if empty
+    const SETUP_CATS = MENU_CATS; // main, side, drink, dessert
+    const SETUP_STEPS = [...SETUP_CATS, {id:"done", label:"All Set!", icon:"✅"}];
+    const totalSteps  = SETUP_STEPS.length;
+    const curSetup    = SETUP_STEPS[setupStep];
+    const isDoneStep  = curSetup?.id === "done";
+
+    // ALL active menu items for current category (source-agnostic)
+    const allActiveForCat = isDoneStep ? [] : [...mealMenu.setMeals,...mealMenu.items]
+      .filter(x => x.active && getItemCat(x) === curSetup?.id);
+
+    // Pantry items for current category that are NOT yet on the menu (for the "from pantry" section)
+    const pantryNotOnMenu = pantryForMeal.filter(x =>
+      getItemCat(x) === curSetup?.id &&
+      !allActiveForCat.some(a => a.id === x.id)
+    );
+
+    // All active items across all cats for summary
+    const allActive = [...mealMenu.setMeals,...mealMenu.items].filter(x=>x.active);
 
     return (
       <div style={shell}>
         <style>{CSS}</style>
-        <GH g1={m.g1} g2={m.g2} shadow={m.shadow} back={()=>setScreen("home")}>
-          <div style={{textAlign:"center",paddingTop:8}}>
-            <h1 style={{color:"white",fontSize:22,fontWeight:800,fontFamily:"'Baloo 2'"}}>Set the Menu</h1>
-            <p style={{color:"rgba(255,255,255,0.78)",fontSize:13,marginTop:3,fontFamily:"'Baloo 2'"}}>{m.emoji} {m.label} · {isSetUp?`${activeSM.length+activeIt.length} items selected`:"Choose what's on tonight"}</p>
+
+        {/* Gradient header with step indicator */}
+        <GH g1={m.g1} g2={m.g2} shadow={m.shadow} back={setupStep>0?()=>setSetupStep(s=>s-1):()=>setScreen("home")}>
+          <div style={{textAlign:"center",paddingTop:4}}>
+            <h1 style={{color:"white",fontSize:22,fontWeight:800,fontFamily:"'Baloo 2'"}}>{isDoneStep?"Menu Ready!":curSetup?.icon+" "+curSetup?.label}</h1>
+            <p style={{color:"rgba(255,255,255,0.78)",fontSize:13,marginTop:3,fontFamily:"'Baloo 2'"}}>{m.emoji} {m.label} · Step {setupStep+1} of {totalSteps}</p>
+          </div>
+          {/* Progress bar */}
+          <div style={{marginTop:12,height:4,borderRadius:50,background:"rgba(255,255,255,0.25)",overflow:"hidden"}}>
+            <div style={{height:"100%",borderRadius:50,background:"rgba(255,255,255,0.9)",width:`${((setupStep+1)/totalSteps)*100}%`,transition:"width 0.4s ease"}}/>
           </div>
         </GH>
 
-        <div style={{flex:1,overflow:"auto",padding:"16px 18px 24px"}}>
+        <div style={{flex:1,overflow:"auto",padding:"18px 18px 24px"}}>
 
-          {/* Fast path — skip to kids if pantry ready */}
-          {canSkip && (
-            <div style={{background:"linear-gradient(135deg,#F0FDF4,#ECFDF5)",border:"2.5px solid #86EFAC",borderRadius:22,padding:"16px 18px",marginBottom:16,boxShadow:"0 4px 20px rgba(22,163,74,0.12)"}}>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                <span style={{fontSize:24}}>✅</span>
-                <div>
-                  <div style={{fontSize:14,fontWeight:800,color:GR1,fontFamily:"'Baloo 2'"}}>{pantryForMeal.length} items ready from your pantry</div>
-                  <div style={{fontSize:12,color:"#166534",fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>All pre-selected — or adjust below</div>
-                </div>
-              </div>
-              <button onClick={()=>{setPlate([]);setScreen("kidPlate");}} className="btn" style={{width:"100%",padding:"13px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${GR1},${GR2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:"0 4px 18px rgba(22,163,74,0.3)"}}>
-                Skip to Kid's Turn →
-              </button>
-            </div>
-          )}
-
-          {savedTmpls.length>0 && (
-            <div style={{marginBottom:18}}>
-              <SL>Saved Menus</SL>
-              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                {savedTmpls.map((t,i)=>(
-                  <button key={i} onClick={()=>loadTemplate(t)} className="btn" style={{background:m.light,border:`2px solid ${m.g1}`,borderRadius:50,padding:"6px 16px",fontSize:13,fontWeight:700,color:m.text,fontFamily:"'Baloo 2'",cursor:"pointer"}}>{t.name}</button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {pantryForMeal.length>0 && (() => {
-            // Group pantry items into menu categories
-            const getItemCat = item => ITEM_CAT[item.id] || (item.isSetMeal ? "main" : "side");
-            return MENU_CATS.map(cat => {
-              const catItems = pantryForMeal.filter(item => getItemCat(item) === cat.id);
-              if (catItems.length===0) return null;
-              return (
-                <div key={cat.id} style={{marginBottom:20}}>
-                  <SL>{cat.icon} {cat.label}</SL>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
-                    {catItems.map(item=>{
-                      const inMenu=[...mealMenu.setMeals,...mealMenu.items].find(x=>x.id===item.id);
-                      const active=inMenu?.active??true;
-                      const type=item.isSetMeal?"setMeals":"items";
-                      return <ToggleCard key={item.id} item={{...item,active}} m={m}
-                        onToggle={()=>{if(inMenu)toggleMenuItem(type,item.id);else setMenu(prev=>({...prev,[meal]:{...prev[meal],[type]:[...prev[meal][type],{...item,active:true}]}}));}}
-                        onRemove={null}/>;
-                    })}
+          {/* ── DONE STEP ── */}
+          {isDoneStep && (
+            <>
+              {savedTmpls.length>0 && (
+                <div style={{marginBottom:18}}>
+                  <SL>Saved Menus</SL>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                    {savedTmpls.map((t,i)=>(
+                      <button key={i} onClick={()=>loadTemplate(t)} className="btn" style={{background:m.light,border:`2px solid ${m.g1}`,borderRadius:50,padding:"6px 16px",fontSize:13,fontWeight:700,color:m.text,fontFamily:"'Baloo 2'",cursor:"pointer"}}>{t.name}</button>
+                    ))}
                   </div>
                 </div>
-              );
-            });
-          })()}
-
-          {customTonight.length>0 && (
-            <>
-              <SL>Added for Tonight</SL>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
-                {customTonight.map(item=>{
-                  const type=item.isSetMeal?"setMeals":"items";
-                  return <ToggleCard key={item.id} item={item} m={m} onToggle={()=>toggleMenuItem(type,item.id)} onRemove={()=>removeCustomMenuItem(type,item.id)}/>;
-                })}
-              </div>
+              )}
+              {allActive.length>0 ? (
+                <>
+                  <SL>Tonight's Menu</SL>
+                  {MENU_CATS.map(cat=>{
+                    const catItems = allActive.filter(x=>getItemCat(x)===cat.id);
+                    if (!catItems.length) return null;
+                    return (
+                      <div key={cat.id} style={{marginBottom:16}}>
+                        <div style={{fontSize:12,fontWeight:700,color:SOFT,fontFamily:"'Baloo 2'",marginBottom:8,textTransform:"uppercase",letterSpacing:"0.06em"}}>{cat.icon} {cat.label}</div>
+                        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
+                          {catItems.map(item=>{
+                            const type=item.isSetMeal?"setMeals":"items";
+                            return <ToggleCard key={item.id} item={item} m={m}
+                              onToggle={()=>toggleMenuItem(type,item.id)}
+                              onRemove={item.custom?()=>removeCustomMenuItem(type,item.id):null}/>;
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <div style={{textAlign:"center",padding:"28px 20px"}}>
+                  <div style={{fontSize:44,opacity:.2}}>🍽️</div>
+                  <p style={{fontFamily:"'Baloo 2'",fontSize:15,fontWeight:700,color:MID,marginTop:12}}>Nothing on the menu yet.</p>
+                  <p style={{fontFamily:"'Baloo 2'",fontSize:13,color:SOFT,marginTop:6}}>Go back and add items, or add something below.</p>
+                </div>
+              )}
+              <button onClick={()=>setAddItemSheet(true)} className="btn" style={{width:"100%",padding:"14px",borderRadius:18,border:`2px dashed ${m.g1}`,background:m.light,color:m.text,fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:12}}>
+                <span style={{fontSize:16}}>＋</span> Add More
+              </button>
             </>
           )}
 
-          {!hasAnything && (
-            <div style={{textAlign:"center",padding:"28px 20px 20px"}}>
-              <div style={{fontSize:44,opacity:0.22}}>🍽️</div>
-              <p style={{fontFamily:"'Baloo 2'",fontSize:15,fontWeight:700,color:MID,marginTop:12}}>Nothing in your pantry for {m.label.toLowerCase()} yet.</p>
-              <p style={{fontFamily:"'Baloo 2'",fontSize:13,color:SOFT,marginTop:6}}>Tap + Add Item below to choose what's on tonight's menu.</p>
-            </div>
+          {/* ── CATEGORY STEP ── */}
+          {!isDoneStep && (
+            <>
+              {/* Active items for this category — always show these */}
+              {allActiveForCat.length>0 && (
+                <>
+                  <div style={{fontSize:12,fontWeight:700,color:SOFT,fontFamily:"'Baloo 2'",marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>On tonight's menu</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
+                    {allActiveForCat.map(item=>{
+                      const type=item.isSetMeal?"setMeals":"items";
+                      return <ToggleCard key={item.id} item={item} m={m}
+                        onToggle={()=>toggleMenuItem(type,item.id)}
+                        onRemove={item.custom?()=>removeCustomMenuItem(type,item.id):null}/>;
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Pantry items not yet on menu — quick-add */}
+              {pantryNotOnMenu.length>0 && (
+                <>
+                  <div style={{fontSize:12,fontWeight:700,color:SOFT,fontFamily:"'Baloo 2'",marginBottom:10,textTransform:"uppercase",letterSpacing:"0.06em"}}>Also in your pantry</div>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:20}}>
+                    {pantryNotOnMenu.map(item=>{
+                      const type=item.isSetMeal?"setMeals":"items";
+                      return <ToggleCard key={item.id} item={{...item,active:false}} m={m}
+                        onToggle={()=>setMenu(prev=>({...prev,[meal]:{...prev[meal],[type]:[...prev[meal][type],{...item,active:true}]}}))}
+                        onRemove={null}/>;
+                    })}
+                  </div>
+                </>
+              )}
+
+              {/* Empty state — nothing selected and nothing in pantry */}
+              {allActiveForCat.length===0 && pantryNotOnMenu.length===0 && (
+                <div style={{textAlign:"center",padding:"24px 20px 16px",opacity:.7}}>
+                  <div style={{fontSize:36}}>{curSetup.icon}</div>
+                  <p style={{fontFamily:"'Baloo 2'",fontSize:14,fontWeight:600,color:SOFT,marginTop:8}}>Nothing added for {curSetup.label.toLowerCase()} yet.</p>
+                  <p style={{fontFamily:"'Baloo 2'",fontSize:12,color:SOFT,marginTop:4}}>Tap + to add something, or skip.</p>
+                </div>
+              )}
+
+              {/* Add item button */}
+              <button onClick={()=>setAddItemSheet(true)} className="btn" style={{width:"100%",padding:"13px",borderRadius:18,border:`2px dashed ${m.g1}`,background:m.light,color:m.text,fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
+                <span style={{fontSize:16}}>＋</span> Add {curSetup.label}
+              </button>
+
+              {/* Selection summary */}
+              {allActiveForCat.length>0 && (
+                <div style={{marginTop:12,padding:"10px 14px",background:"#F0FDF4",border:"1.5px solid #86EFAC",borderRadius:14,display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
+                  {allActiveForCat.map(x=><span key={x.id} style={{fontSize:18}}>{x.emoji}</span>)}
+                  <span style={{fontSize:12,fontWeight:700,color:GR1,fontFamily:"'Baloo 2'"}}>{allActiveForCat.length} selected ✓</span>
+                </div>
+              )}
+            </>
           )}
-
-          <button onClick={()=>setAddItemSheet(true)} className="btn" style={{width:"100%",padding:"15px",borderRadius:18,border:`2px dashed ${m.g1}`,background:m.light,color:m.text,fontSize:15,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:4}}>
-            <span style={{fontSize:18}}>＋</span> Add Item for Tonight
-          </button>
-
-          <Hint text={pantryForMeal.length>0?"In-stock pantry items are pre-checked. Toggle off anything you don't want, or add more below.":"Tap + Add Item to build tonight's menu. Items you add can be saved to your pantry for next time."}/>
         </div>
 
-        {/* Bottom CTAs */}
+        {/* Bottom nav */}
         <div style={{padding:"12px 18px 32px",background:CREAM,borderTop:"1px solid #EDE5DA"}}>
-          {savingTmpl ? (
-            <div style={{display:"flex",gap:10}}>
-              <input value={tmplName} onChange={e=>setTmplName(e.target.value)} placeholder="Name this menu…" onKeyDown={e=>e.key==="Enter"&&saveTemplate()} autoFocus style={{flex:1,padding:"14px 16px",borderRadius:16,border:`2px solid ${m.g1}`,fontSize:14,fontFamily:"'Baloo 2'",outline:"none",background:"white"}}/>
-              <button onClick={saveTemplate} className="btn" style={{padding:"14px 18px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>Save</button>
-              <button onClick={()=>setSavingTmpl(false)} className="btn" style={{padding:"14px",borderRadius:16,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,cursor:"pointer"}}>✕</button>
-            </div>
+          {isDoneStep ? (
+            savingTmpl ? (
+              <div style={{display:"flex",gap:10}}>
+                <input value={tmplName} onChange={e=>setTmplName(e.target.value)} placeholder="Name this menu…" onKeyDown={e=>e.key==="Enter"&&saveTemplate()} autoFocus style={{flex:1,padding:"14px 16px",borderRadius:16,border:`2px solid ${m.g1}`,fontSize:14,fontFamily:"'Baloo 2'",outline:"none",background:"white"}}/>
+                <button onClick={saveTemplate} className="btn" style={{padding:"14px 18px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>Save</button>
+                <button onClick={()=>setSavingTmpl(false)} className="btn" style={{padding:"14px",borderRadius:16,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,cursor:"pointer"}}>✕</button>
+              </div>
+            ) : (
+              <div style={{display:"flex",gap:10}}>
+                <button onClick={()=>setSavingTmpl(true)} className="btn" style={{flex:1,padding:"14px",borderRadius:16,border:`2px solid ${m.g1}`,background:"white",color:m.text,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>💾 Save</button>
+                <button onClick={()=>{setGuidedStep(0);setPlate([]);setScreen("kidPlate");}} className="btn" style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 18px ${m.shadow}`}}>
+                  {allActive.length>0?"Kid's Turn! ⭐":"Skip to Kids →"}
+                </button>
+              </div>
+            )
           ) : (
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setSavingTmpl(true)} className="btn" style={{flex:1,padding:"14px",borderRadius:16,border:`2px solid ${m.g1}`,background:"white",color:m.text,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>💾 Save</button>
-              <button onClick={()=>{setPlate([]);setScreen("kidPlate");}} className="btn" style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 18px ${m.shadow}`}}>
-                {isSetUp ? "Kid's Turn! ⭐" : "Continue →"}
+              <button onClick={()=>setSetupStep(s=>s+1)} className="btn"
+                style={{flex:1,padding:"14px",borderRadius:16,border:`2px solid #EDE5DA`,background:"white",color:SOFT,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+                Skip
+              </button>
+              <button onClick={()=>setSetupStep(s=>s+1)} className="btn"
+                style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 18px ${m.shadow}`}}>
+                {allActiveForCat.length>0?`Next → (${allActiveForCat.length} picked)`:"Next →"}
               </button>
             </div>
           )}
@@ -1077,88 +1261,136 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
             </p>
             <div style={{display:"flex",gap:10}}>
               <button onClick={()=>setPantryPrompt(null)} className="btn" style={{flex:1,padding:"12px",borderRadius:14,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>Not now</button>
-              <button onClick={confirmAddToPantry} className="btn" style={{flex:2,padding:"12px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${PT.g1},${PT.g2})`,color:"white",fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 3px 12px ${PT.shadow}`}}>Yes, add to pantry ✓</button>
+              <button onClick={confirmAddToPantry} className="btn" style={{flex:2,padding:"12px",borderRadius:14,border:"none",background:`linear-gradient(135deg,${PT.g1},${PT.g2})`,color:"white",fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 3px 12px ${PT.shadow}`}}>Yes, add ✓</button>
             </div>
           </div>
         )}
 
-        {/* Add item sheet */}
+        {/* Add item sheet — scoped to current category */}
         {addItemSheet && (
           <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,0.5)",zIndex:50,display:"flex",alignItems:"flex-end"}}>
-            <div style={{background:CREAM,width:"100%",borderRadius:"28px 28px 0 0",maxHeight:"82dvh",display:"flex",flexDirection:"column",animation:"slideUp 0.28s ease",boxShadow:"0 -8px 40px rgba(0,0,0,0.15)"}}>
+            <div style={{background:CREAM,width:"100%",borderRadius:"28px 28px 0 0",maxHeight:"88dvh",display:"flex",flexDirection:"column",animation:"slideUp 0.28s ease",boxShadow:"0 -8px 40px rgba(0,0,0,0.15)"}}>
+              {/* Header */}
               <div style={{padding:"20px 22px 12px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
-                <h3 style={{fontSize:18,fontWeight:800,fontFamily:"'Baloo 2'",color:DARK}}>Add Item for Tonight</h3>
-                <button onClick={()=>{setAddItemSheet(false);setCustomItemName("");setCustomItemEmoji("");}} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:SOFT}}>✕</button>
+                <div>
+                  <h3 style={{fontSize:18,fontWeight:800,fontFamily:"'Baloo 2'",color:DARK}}>
+                    {isDoneStep?"Add Items":"Add "+curSetup.label}
+                  </h3>
+                  {pickerSelections.length>0 && (
+                    <div style={{display:"flex",gap:4,marginTop:5,flexWrap:"wrap"}}>
+                      {pickerSelections.map((x,i)=>(
+                        <span key={i} style={{fontSize:14,background:m.light,border:`1.5px solid ${m.g1}`,borderRadius:50,padding:"2px 10px",fontFamily:"'Baloo 2'",fontWeight:700,color:m.text,display:"flex",alignItems:"center",gap:4}}>
+                          {x.emoji} {x.name}
+                          <span onClick={()=>togglePickerItem(x)} style={{cursor:"pointer",color:m.g1,fontWeight:900,fontSize:12}}>✕</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <button onClick={closeAddItemSheet} style={{background:"none",border:"none",fontSize:22,cursor:"pointer",color:SOFT,flexShrink:0,alignSelf:"flex-start"}}>✕</button>
               </div>
+
+              {/* Search */}
               <div style={{padding:"0 18px 10px",flexShrink:0}}>
                 <div style={{display:"flex",gap:8}}>
-                  <input value={customItemEmoji} onChange={e=>setCustomItemEmoji(e.target.value)} placeholder="🍽️" maxLength={2} style={{width:54,padding:"12px",borderRadius:14,border:"2px solid #EDE5DA",fontSize:22,textAlign:"center",outline:"none",background:"white"}}/>
-                  <input
-                    value={customItemName}
-                    onChange={e=>setCustomItemName(e.target.value)}
-                    onKeyDown={e=>e.key==="Enter"&&customItemName.trim()&&addItemTonight({name:customItemName.trim(),emoji:customItemEmoji.trim()||"✨"})}
-                    placeholder="Search or type a food…"
-                    autoFocus
-                    style={{flex:1,padding:"12px 16px",borderRadius:14,border:`2px solid ${customItemName.trim()?m.g1:"#EDE5DA"}`,fontSize:15,fontFamily:"'Baloo 2'",outline:"none",background:"white",transition:"border-color 0.18s"}}
-                  />
+                  <input value={customItemEmoji} onChange={e=>setCustomItemEmoji(e.target.value)} placeholder="🍽️" maxLength={2}
+                    style={{width:54,padding:"12px",borderRadius:14,border:"2px solid #EDE5DA",fontSize:22,textAlign:"center",outline:"none",background:"white"}}/>
+                  <input value={customItemName} onChange={e=>setCustomItemName(e.target.value)}
+                    onKeyDown={e=>{
+                      if(e.key==="Enter"&&customItemName.trim()){
+                        // Stage the custom item
+                        const exists=pickerSelections.some(x=>x.name.toLowerCase()===customItemName.trim().toLowerCase());
+                        if(!exists)setPickerSelections(prev=>[...prev,{name:customItemName.trim(),emoji:customItemEmoji.trim()||"✨"}]);
+                        setCustomItemName(""); setCustomItemEmoji("");
+                      }
+                    }}
+                    placeholder="Search or type a food…" autoFocus
+                    style={{flex:1,padding:"12px 16px",borderRadius:14,border:`2px solid ${customItemName.trim()?m.g1:"#EDE5DA"}`,fontSize:15,fontFamily:"'Baloo 2'",outline:"none",background:"white",transition:"border-color 0.18s"}}/>
                 </div>
               </div>
-              <div style={{flex:1,overflow:"auto",padding:"8px 18px 32px"}}>
-                {(() => {
-                  const q = customItemName.trim().toLowerCase();
-                  const filtered = q
-                    ? commonForMeal.filter(item => item.name.toLowerCase().includes(q))
-                    : commonForMeal;
-                  const exactMatch = commonForMeal.some(item => item.name.toLowerCase()===q);
-                  const showAddNew = q && !exactMatch;
 
-                  if (filtered.length===0 && !showAddNew) return (
+              {/* Items grid */}
+              <div style={{flex:1,overflow:"auto",padding:"8px 18px 16px"}}>
+                {(()=>{
+                  const q=customItemName.trim().toLowerCase();
+                  const filtered=q?commonForMeal.filter(x=>x.name.toLowerCase().includes(q)):commonForMeal;
+                  const exactMatch=commonForMeal.some(x=>x.name.toLowerCase()===q);
+                  const showAddNew=q&&!exactMatch;
+
+                  if(filtered.length===0&&!showAddNew) return(
                     <div style={{textAlign:"center",padding:"32px 0"}}>
                       <div style={{fontSize:40,opacity:.2}}>🔍</div>
                       <p style={{fontFamily:"'Baloo 2'",fontSize:14,color:SOFT,fontWeight:600,marginTop:12}}>No matches found</p>
                     </div>
                   );
 
-                  return (
-                    <>
-                      {!q && <div style={{marginBottom:10}}><SL>Common {m.label} Items</SL></div>}
-                      {q && filtered.length>0 && <div style={{marginBottom:10}}><SL>{filtered.length} result{filtered.length!==1?"s":""} for "{customItemName}"</SL></div>}
-
-                      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:showAddNew?16:8}}>
-                        {filtered.map((item,idx)=>{
-                          const added = menuNames.has(item.name.toLowerCase());
-                          const inPantry = pantryItems.some(p=>p.name.toLowerCase()===item.name.toLowerCase());
-                          return (
-                            <div key={idx}
-                              onClick={()=>added ? removeFromMenuByName(item.name) : addItemTonight(item)}
-                              className="card"
-                              style={{background:added?"#F0FDF4":inPantry?m.light:"white",borderRadius:18,padding:"13px 6px 10px",textAlign:"center",border:`2.5px solid ${added?"#86EFAC":inPantry?m.g1:"#EDE5DA"}`,boxShadow:CS,position:"relative",cursor:"pointer"}}>
-                              {inPantry&&!added&&<div style={{position:"absolute",top:-7,right:-7,background:m.g1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>pantry</div>}
-                              {added&&<div style={{position:"absolute",top:-7,right:-7,background:GR1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>✓ tap to remove</div>}
-                              <div style={{fontSize:28,lineHeight:1}}>{item.emoji}</div>
-                              <div style={{fontSize:10,fontWeight:700,marginTop:4,color:added?GR1:DARK,fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Add new item row — shown when no exact match */}
-                      {showAddNew && (
-                        <div onClick={()=>addItemTonight({name:customItemName.trim(),emoji:customItemEmoji.trim()||"✨"})} className="card"
-                          style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",background:m.light,borderRadius:18,border:`2px solid ${m.g1}`,boxShadow:`0 4px 16px ${m.shadow}`,cursor:"pointer",animation:"fadeUp 0.2s ease"}}>
-                          <div style={{width:44,height:44,borderRadius:14,background:`linear-gradient(135deg,${m.g1},${m.g2})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:"white",fontWeight:800,flexShrink:0}}>
-                            {customItemEmoji.trim()||"＋"}
+                  return(<>
+                    {!q&&<div style={{marginBottom:10}}><SL>Common {m.label} Items</SL></div>}
+                    {q&&filtered.length>0&&<div style={{marginBottom:10}}><SL>{filtered.length} result{filtered.length!==1?"s":""} for "{customItemName}"</SL></div>}
+                    <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:9,marginBottom:showAddNew?16:8}}>
+                      {filtered.map((item,idx)=>{
+                        const onMenu  = menuNames.has(item.name.toLowerCase());
+                        const staged  = pickerSelections.some(x=>x.name.toLowerCase()===item.name.toLowerCase());
+                        const inPantry= pantryItems.some(p=>p.name.toLowerCase()===item.name.toLowerCase());
+                        const selected = staged || onMenu;
+                        return(
+                          <div key={idx}
+                            onClick={()=>{
+                              if(onMenu){ removeFromMenuByName(item.name); return; }
+                              togglePickerItem(item);
+                            }}
+                            className="card"
+                            style={{
+                              background:selected?(onMenu?"#F0FDF4":m.light):(inPantry?m.light+"88":"white"),
+                              borderRadius:18,padding:"13px 6px 10px",textAlign:"center",
+                              border:`2.5px solid ${selected?(onMenu?"#86EFAC":m.g1):(inPantry?m.g1+"66":"#EDE5DA")}`,
+                              boxShadow:selected?`0 4px 16px ${m.shadow}`:CS,
+                              position:"relative",cursor:"pointer",
+                              transform:selected?"scale(1.03)":"scale(1)",
+                              transition:"all 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+                            }}>
+                            {/* Badge */}
+                            {onMenu && <div style={{position:"absolute",top:-7,right:-7,background:GR1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>✓ on menu</div>}
+                            {staged && !onMenu && <div style={{position:"absolute",top:-7,right:-7,background:m.g1,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>✓ selected</div>}
+                            {!selected && inPantry && <div style={{position:"absolute",top:-7,right:-7,background:SOFT,color:"white",borderRadius:50,fontSize:8,fontWeight:800,padding:"2px 7px",fontFamily:"'Baloo 2'",border:"1.5px solid white"}}>pantry</div>}
+                            <div style={{fontSize:28,lineHeight:1}}>{item.emoji}</div>
+                            <div style={{fontSize:10,fontWeight:700,marginTop:4,color:selected?m.text:DARK,fontFamily:"'Baloo 2'",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",padding:"0 2px"}}>{item.name}</div>
                           </div>
-                          <div style={{flex:1}}>
-                            <div style={{fontSize:15,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{customItemName.trim()}</div>
-                            <div style={{fontSize:12,color:m.text,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>Tap to add to tonight's menu</div>
-                          </div>
-                          <div style={{fontSize:20,color:m.g1,fontWeight:800}}>＋</div>
+                        );
+                      })}
+                    </div>
+                    {showAddNew&&(
+                      <div onClick={()=>{
+                        const item={name:customItemName.trim(),emoji:customItemEmoji.trim()||"✨"};
+                        togglePickerItem(item);
+                        setCustomItemName(""); setCustomItemEmoji("");
+                      }} className="card"
+                        style={{display:"flex",alignItems:"center",gap:14,padding:"14px 18px",background:m.light,borderRadius:18,border:`2px solid ${m.g1}`,boxShadow:`0 4px 16px ${m.shadow}`,cursor:"pointer",animation:"fadeUp 0.2s ease"}}>
+                        <div style={{width:44,height:44,borderRadius:14,background:`linear-gradient(135deg,${m.g1},${m.g2})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,color:"white",fontWeight:800,flexShrink:0}}>{customItemEmoji.trim()||"＋"}</div>
+                        <div style={{flex:1}}>
+                          <div style={{fontSize:15,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{customItemName.trim()}</div>
+                          <div style={{fontSize:12,color:m.text,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:1}}>Tap to stage for adding</div>
                         </div>
-                      )}
-                    </>
-                  );
+                        <div style={{fontSize:20,color:m.g1,fontWeight:800}}>＋</div>
+                      </div>
+                    )}
+                  </>);
                 })()}
+              </div>
+
+              {/* Confirm button */}
+              <div style={{padding:"10px 18px 36px",flexShrink:0,borderTop:"1px solid #EDE5DA",background:CREAM}}>
+                {pickerSelections.length>0 || customItemName.trim() ? (
+                  <button onClick={confirmPickerSelections} className="btn"
+                    style={{width:"100%",padding:"17px",borderRadius:20,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:16,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 6px 22px ${m.shadow}`,animation:"pulse 2s ease-in-out infinite"}}>
+                    Add {pickerSelections.length + (customItemName.trim()?1:0)} Item{pickerSelections.length+(customItemName.trim()?1:0)!==1?"s":""} to Menu ✓
+                  </button>
+                ) : (
+                  <button onClick={closeAddItemSheet} className="btn"
+                    style={{width:"100%",padding:"15px",borderRadius:20,border:"2px solid #EDE5DA",background:"white",color:SOFT,fontSize:15,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+                    Done
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -1169,50 +1401,114 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
 
   /* ── KID PLATE BUILDER ── */
   if (screen==="kidPlate") {
-    const kidName = kids[cookingOrder.length];
+    const kidIdx  = cookingOrder.length;
+    const kp      = kidProfile(kidIdx);
+    const pal     = kidColor(kidIdx);
+    const av      = kidAvatar(kidIdx);
+    const kidName = kp?.name;
+
+    // Always guided — 4 possible steps, skip empty ones
+    const ALL_STEPS = [
+      {id:"main",    label:"Pick your main 🍗",  items: activeSM,                                          optional:false},
+      {id:"side",    label:"Pick your sides 🥦",  items: activeIt.filter(x=>ITEM_CAT[x.id]==="side"),       optional:true},
+      {id:"drink",   label:"Pick a drink 🥛",     items: activeIt.filter(x=>ITEM_CAT[x.id]==="drink"),      optional:true},
+      {id:"dessert", label:"Want a treat? 🍦",    items: activeIt.filter(x=>ITEM_CAT[x.id]==="dessert"),    optional:true},
+    ].filter(s=>s.items.length>0);
+
+    const currentStep = ALL_STEPS[guidedStep];
+    const isLastStep  = guidedStep >= ALL_STEPS.length - 1;
+    const isDone      = guidedStep >= ALL_STEPS.length;
+
+    // Items on plate for current step
+    const plateInStep = currentStep ? currentStep.items.filter(x=>plate.some(p=>p.id===x.id)) : [];
+
     return (
-      <div style={{...shell,background:`linear-gradient(180deg,${m.g1}18 0%,${m.g2}10 40%,${CREAM} 75%)`}}>
+      <div style={{...shell, background:`linear-gradient(180deg,${pal.bg} 0%,${CREAM} 50%)`}}>
         <style>{CSS}</style>
         {showConfetti && <Confetti/>}
 
-        <div style={{padding:"44px 22px 6px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
-          <button onClick={()=>setScreen("parentSetup")} className="btn" style={{background:"rgba(0,0,0,0.06)",backdropFilter:"blur(8px)",border:"none",fontSize:13,fontFamily:"'Baloo 2'",fontWeight:700,color:MID,cursor:"pointer",padding:"7px 14px",borderRadius:50}}>← Back</button>
-          <div style={{fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",background:`linear-gradient(135deg,${m.g1},${m.g2})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>
-            {kidName ? `${kidName}'s Plate 🍽️` : `${m.emoji} ${m.label}`}
+        {/* Header */}
+        <div style={{padding:"44px 22px 10px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
+          <button onClick={()=>{if(guidedStep>0)setGuidedStep(s=>s-1);else setScreen("parentSetup");}} className="btn"
+            style={{background:"rgba(0,0,0,0.06)",backdropFilter:"blur(8px)",border:"none",fontSize:13,fontFamily:"'Baloo 2'",fontWeight:700,color:MID,cursor:"pointer",padding:"7px 14px",borderRadius:50}}>← Back</button>
+
+          {/* Kid identity badge */}
+          <div style={{display:"flex",alignItems:"center",gap:8,background:"white",border:`2.5px solid ${pal.ring}`,borderRadius:50,padding:"6px 14px 6px 10px",boxShadow:`0 4px 16px ${pal.ring}33`}}>
+            <div style={{width:28,height:28,borderRadius:"50%",background:pal.bg,border:`2px solid ${pal.ring}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>{av}</div>
+            <span style={{fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",color:pal.text}}>{kidName?`${kidName}'s Plate`:"Build your plate"}</span>
           </div>
-          <div style={{width:70}}/>
+
+          <div style={{width:60}}/>
         </div>
 
+        {/* Plate + encouragement */}
         <div style={{display:"flex",flexDirection:"column",alignItems:"center",padding:"4px 0 8px",flexShrink:0,position:"relative"}}>
-          {plate.length===0 && <p style={{fontSize:11,fontFamily:"'Baloo 2'",fontWeight:700,color:SOFT,marginBottom:6,textAlign:"center"}}>👇 Tap food below · 👆 Tap plate to remove</p>}
-          {spark && <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle,${m.g1}66,transparent 70%)`,animation:"starBurst 0.55s ease-out forwards",pointerEvents:"none",zIndex:10}}/>}
-          <PlateVisual plate={plate} removingIds={removingIds} onRemove={removeFromPlate} wiggle={wiggle} size={224}/>
-          <div style={{marginTop:10,textAlign:"center",minHeight:38,padding:"0 24px"}}>
-            <div key={plate.length} style={{animation:"fadeUp 0.3s ease",fontSize:15,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{ENC[encIdx].msg}</div>
-            {ENC[encIdx].sub
-              ? <div style={{fontSize:12,color:MID,fontFamily:"'Baloo 2'",marginTop:1}}>{ENC[encIdx].sub}</div>
-              : plate.length>0 && <div style={{fontSize:11,color:SOFT,fontFamily:"'Baloo 2'",marginTop:1}}>tap plate items to remove</div>}
+          {spark && <div style={{position:"absolute",width:100,height:100,borderRadius:"50%",background:`radial-gradient(circle,${pal.ring}66,transparent 70%)`,animation:"starBurst 0.55s ease-out forwards",pointerEvents:"none",zIndex:10}}/>}
+          <PlateVisual plate={plate} removingIds={removingIds} onRemove={removeFromPlate} wiggle={wiggle} size={210}/>
+          <div style={{marginTop:10,textAlign:"center",minHeight:40,padding:"0 24px"}}>
+            {plate.length===0
+              ? <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <div style={{fontSize:24,animation:"float 1.4s ease-in-out infinite"}}>👇</div>
+                  <div style={{fontSize:12,fontWeight:700,color:SOFT,fontFamily:"'Baloo 2'"}}>Tap food below to build your plate!</div>
+                </div>
+              : <>
+                  <div key={plate.length} style={{animation:"fadeUp 0.3s ease",fontSize:14,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{ENC[encIdx].msg}</div>
+                  {ENC[encIdx].sub && <div style={{fontSize:11,color:MID,fontFamily:"'Baloo 2'",marginTop:1}}>{ENC[encIdx].sub}</div>}
+                </>
+            }
           </div>
         </div>
 
+        {/* Food grid */}
         <div style={{flex:1,overflow:"auto",padding:"2px 16px 6px"}}>
-          {activeSM.length>0 && (
+          {!isDone && currentStep && (
             <>
-              <SL>Set Meals</SL>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
-                {activeSM.map((item,idx)=>{const p=plate.find(x=>x.id===item.id);return <KidFoodCard key={item.id} item={{...item,note:p?.note}} isOnPlate={!!p} colorIdx={idx} onTap={()=>togglePlateItem(item)} onNote={p?()=>{setNoteTarget(p.plateKey);setNoteText(p.note||"");}:null}/>;})}
+              {/* Step progress */}
+              <div style={{marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:7}}>
+                  <span style={{fontSize:15,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'"}}>{currentStep.label}</span>
+                  <span style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600}}>
+                    {guidedStep+1}/{ALL_STEPS.length}
+                  </span>
+                </div>
+                <div style={{height:5,borderRadius:50,background:"#EDE5DA",overflow:"hidden"}}>
+                  <div style={{height:"100%",borderRadius:50,background:`linear-gradient(135deg,${pal.ring},${m.g1})`,width:`${((guidedStep)/ALL_STEPS.length)*100}%`,transition:"width 0.4s ease"}}/>
+                </div>
+                {plateInStep.length>0 && (
+                  <div style={{display:"flex",gap:6,marginTop:8,flexWrap:"wrap"}}>
+                    {plateInStep.map(x=><span key={x.id} style={{fontSize:20}}>{x.emoji}</span>)}
+                    <span style={{fontSize:11,fontWeight:700,color:pal.text,fontFamily:"'Baloo 2'",alignSelf:"center"}}>{plateInStep.length} picked ✓</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Items grid — multi-select, no auto-advance */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
+                {currentStep.items.map((item,idx)=>{
+                  const p=plate.find(x=>x.id===item.id);
+                  const isdrink=ITEM_CAT[item.id]==="drink"||["milk","juice","oj","water","lemonade","soda"].some(d=>item.name.toLowerCase().includes(d));
+                  return <KidFoodCard key={item.id} item={{...item,note:p?.note}} isOnPlate={!!p} colorIdx={idx}
+                    onTap={()=>{
+                      if(p){removeFromPlate(p.plateKey);}
+                      else{const pk=addToPlate(item);if(isdrink&&pk)setTimeout(()=>{setNoteTarget(pk);setNoteText("");},150);}
+                    }}
+                    onNote={p?()=>{setNoteTarget(p.plateKey);setNoteText(p.note||"");}:null}/>;
+                })}
               </div>
             </>
           )}
-          {activeIt.length>0 && (
-            <>
-              <SL>Sides &amp; Extras</SL>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10,marginBottom:16}}>
-                {activeIt.map((item,idx)=>{const p=plate.find(x=>x.id===item.id);return <KidFoodCard key={item.id} item={{...item,note:p?.note}} small isOnPlate={!!p} colorIdx={activeSM.length+idx} onTap={()=>togglePlateItem(item)} onNote={p?()=>{setNoteTarget(p.plateKey);setNoteText(p.note||"");}:null}/>;})}
-              </div>
-            </>
+
+          {/* Done state — show full plate review inline */}
+          {isDone && (
+            <div style={{textAlign:"center",padding:"10px 8px 8px"}}>
+              <div style={{fontSize:16,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginBottom:4}}>Your plate looks great! 🎉</div>
+              <div style={{fontSize:12,color:SOFT,fontFamily:"'Baloo 2'",marginBottom:12}}>Tap items on the plate to remove anything.</div>
+              <button onClick={()=>setGuidedStep(ALL_STEPS.length-1)} className="btn"
+                style={{padding:"8px 20px",borderRadius:50,border:"2px solid #EDE5DA",background:"white",color:SOFT,fontSize:12,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>← Change something</button>
+            </div>
           )}
-          {activeSM.length===0&&activeIt.length===0 && (
+
+          {ALL_STEPS.length===0 && (
             <div style={{textAlign:"center",padding:"32px 20px"}}>
               <div style={{fontSize:44,opacity:.2}}>🍽️</div>
               <p style={{fontFamily:"'Baloo 2'",fontSize:15,fontWeight:700,color:MID,marginTop:12}}>No items on the menu yet.</p>
@@ -1221,10 +1517,48 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
           )}
         </div>
 
-        <div style={{padding:"8px 16px 32px",flexShrink:0}}>
-          <button onClick={handleDone} className="btn" style={{width:"100%",padding:"20px",border:"none",borderRadius:24,background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:20,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 8px 32px ${m.shadow}`,animation:plate.length>0?"pulse 2.2s ease-in-out infinite":"none"}}>
-            I'm Done! 🎉
-          </button>
+        {/* Bottom buttons */}
+        <div style={{padding:"8px 16px 32px",flexShrink:0,display:"flex",gap:10}}>
+          {!isDone && currentStep?.optional && (
+            <button onClick={()=>setGuidedStep(s=>s+1)} className="btn"
+              style={{flex:1,padding:"16px",borderRadius:22,border:"2px solid #EDE5DA",background:"white",color:SOFT,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
+              Skip
+            </button>
+          )}
+          {!isDone ? (
+            <button onClick={()=>{
+              if(isLastStep){setGuidedStep(s=>s+1);}
+              else{setGuidedStep(s=>s+1);}
+            }} className="btn"
+              style={{flex:2,padding:"18px",border:"none",borderRadius:22,
+                background:plateInStep.length>0||currentStep?.optional?`linear-gradient(135deg,${pal.ring},${m.g1})`:"#E8E4DE",
+                color:plateInStep.length>0||currentStep?.optional?"white":SOFT,
+                fontSize:16,fontWeight:800,fontFamily:"'Baloo 2'",
+                cursor:plateInStep.length>0||currentStep?.optional?"pointer":"default",
+                boxShadow:plateInStep.length>0||currentStep?.optional?`0 6px 24px ${pal.ring}44`:"none",
+                animation:plateInStep.length>0?"pulse 2.2s ease-in-out infinite":"none",
+                transition:"all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+              }}>
+              {isLastStep
+                ? (plateInStep.length>0?"Finish! →":"Skip →")
+                : (plateInStep.length>0?`Next → (${plateInStep.length})`:currentStep?.optional?"Skip →":"Pick one first 👆")
+              }
+            </button>
+          ) : (
+            <button onClick={plate.length>0?handleDone:undefined}
+              className={plate.length>0?"btn":""}
+              style={{flex:1,padding:plate.length>0?"20px":"16px",border:"none",borderRadius:22,
+                background:plate.length>0?`linear-gradient(135deg,${m.g1},${m.g2})`:"#E8E4DE",
+                color:plate.length>0?"white":SOFT,
+                fontSize:plate.length>0?20:15,fontWeight:800,fontFamily:"'Baloo 2'",
+                cursor:plate.length>0?"pointer":"default",
+                boxShadow:plate.length>0?`0 8px 32px ${m.shadow}`:"none",
+                animation:plate.length>0?"pulse 2.2s ease-in-out infinite":"none",
+                transition:"all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+              }}>
+              {plate.length>0?"I'm Done! 🎉":"Pick something first 👆"}
+            </button>
+          )}
         </div>
 
         {/* Special request note sheet */}
@@ -1238,21 +1572,12 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
                   <p style={{fontSize:13,color:SOFT,fontFamily:"'Baloo 2'",fontWeight:600,marginTop:2}}>Any special requests?</p>
                 </div>
               </div>
-              <input
-                value={noteText}
-                onChange={e=>setNoteText(e.target.value)}
-                onKeyDown={e=>e.key==="Enter"&&saveItemNote()}
-                placeholder={`e.g. "extra cheese", "no crust", "apple juice"`}
-                autoFocus
-                style={{width:"100%",padding:"14px 16px",borderRadius:16,border:`2px solid ${m.g1}`,fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white",marginBottom:14}}
-              />
+              <input value={noteText} onChange={e=>setNoteText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveItemNote()}
+                placeholder={`e.g. "extra cheese", "no crust", "apple juice"`} autoFocus
+                style={{width:"100%",padding:"14px 16px",borderRadius:16,border:`2px solid ${m.g1}`,fontSize:16,fontFamily:"'Baloo 2'",outline:"none",background:"white",marginBottom:14}}/>
               <div style={{display:"flex",gap:10}}>
-                <button onClick={()=>{setNoteTarget(null);setNoteText("");}} className="btn" style={{flex:1,padding:"14px",borderRadius:16,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>
-                  {noteText?"Clear":"Skip"}
-                </button>
-                <button onClick={saveItemNote} className="btn" style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 16px ${m.shadow}`}}>
-                  {noteText?"Save Note ✓":"Done"}
-                </button>
+                <button onClick={()=>{setNoteTarget(null);setNoteText("");}} className="btn" style={{flex:1,padding:"14px",borderRadius:16,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer"}}>{noteText?"Clear":"Skip"}</button>
+                <button onClick={saveItemNote} className="btn" style={{flex:2,padding:"14px",borderRadius:16,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 16px ${m.shadow}`}}>{noteText?"Save Note ✓":"Done"}</button>
               </div>
             </div>
           </div>
@@ -1269,17 +1594,16 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
 
       <GH g1={m.g1} g2={m.g2} shadow={m.shadow}>
         <div style={{textAlign:"center",paddingTop:4}}>
-          <div style={{fontSize:40,animation:"badgePop 0.5s ease",marginTop:4}}>👀</div>
+          <div style={{fontSize:44,animation:"badgePop 0.5s ease",marginTop:4}}>{kidAvatar(cookingOrder.length)}</div>
           <h1 style={{color:"white",fontSize:24,fontWeight:800,fontFamily:"'Baloo 2'",marginTop:6}}>
-            {kids[cookingOrder.length] ? `${kids[cookingOrder.length]}'s Plate` : "Here's the Plate!"}
+            {kidProfile(cookingOrder.length)?.name ? `${kidProfile(cookingOrder.length).name}'s Plate` : "Here's the Plate!"}
           </h1>
           <p style={{color:"rgba(255,255,255,0.78)",fontSize:13,marginTop:3,fontFamily:"'Baloo 2'"}}>{m.label} · {plate.length} item{plate.length!==1?"s":""}</p>
         </div>
       </GH>
 
-      <div style={{flex:1,overflow:"auto",padding:"20px 20px 100px"}}>
-        <Hint icon="👀" text="Look over the plate. Tap Looks Good to approve and start cooking, or Edit to let them change something."/>
-        <div style={{display:"flex",justifyContent:"center",margin:"20px 0 22px"}}>
+      <div style={{flex:1,overflow:"auto",padding:"16px 20px 100px"}}>
+        <div style={{display:"flex",justifyContent:"center",margin:"8px 0 20px"}}>
           <PlateVisual plate={plate} size={210}/>
         </div>
         {plate.length>0 ? (
@@ -1305,7 +1629,7 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
       <div style={{position:"sticky",bottom:0,padding:"12px 18px 32px",background:CREAM,borderTop:"1px solid #EDE5DA"}}>
         <div style={{display:"flex",gap:10}}>
           <button onClick={()=>setScreen("kidPlate")} className="btn" style={{flex:1,padding:"15px",borderRadius:18,border:"2px solid #EDE5DA",background:"white",color:MID,fontSize:14,fontWeight:700,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:CS}}>← Edit</button>
-          <button onClick={approveAndCook} className="btn" style={{flex:2,padding:"15px",borderRadius:18,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:14,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 4px 20px ${m.shadow}`,animation:"pulse 2s ease-in-out infinite"}}>Looks Good! ✅</button>
+          <button onClick={approveAndCook} className="btn" style={{flex:2,padding:"17px",borderRadius:18,border:"none",background:`linear-gradient(135deg,${m.g1},${m.g2})`,color:"white",fontSize:17,fontWeight:800,fontFamily:"'Baloo 2'",cursor:"pointer",boxShadow:`0 6px 24px ${m.shadow}`,animation:"pulse 1.8s ease-in-out infinite"}}>Looks Amazing! 🎉</button>
         </div>
       </div>
     </div>
@@ -1334,10 +1658,10 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
               const done = ticket.items.every(x=>x.checked);
               return (
                 <div key={ticket.id} style={{background:"white",borderRadius:24,overflow:"hidden",boxShadow:done?`0 4px 20px rgba(22,163,74,0.2)`:CS,border:done?"2.5px solid #86EFAC":"2.5px solid transparent",transition:"all 0.35s"}}>
-                  <div style={{padding:"13px 18px",background:done?`linear-gradient(135deg,${GR1},${GR2})`:m.light,display:"flex",alignItems:"center",justifyContent:"space-between",transition:"background 0.4s"}}>
+                  <div style={{padding:"13px 18px",background:done?`linear-gradient(135deg,${GR1},${GR2})`:ticket.color?ticket.color.bg:m.light,display:"flex",alignItems:"center",justifyContent:"space-between",transition:"background 0.4s"}}>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
-                      <span style={{fontSize:20}}>{done?"✅":"🍽️"}</span>
-                      <span style={{fontSize:16,fontWeight:800,fontFamily:"'Baloo 2'",color:done?"white":m.text}}>{ticket.label}</span>
+                      <span style={{fontSize:20}}>{done?"✅":ticket.avatar||"🍽️"}</span>
+                      <span style={{fontSize:16,fontWeight:800,fontFamily:"'Baloo 2'",color:done?"white":ticket.color?ticket.color.text:m.text}}>{ticket.label}</span>
                     </div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       {done && <div style={{fontSize:13,fontWeight:800,color:"white",fontFamily:"'Baloo 2'",animation:"stampDrop 0.5s cubic-bezier(0.34,1.56,0.64,1)"}}>DONE!</div>}
@@ -1432,9 +1756,19 @@ export default function App({savedData=null, onStateChange=null, onSignOut=null,
           <div style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
             {snackDone ? (
               <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 30px"}}>
-                <div style={{fontSize:80,animation:"badgePop 0.5s cubic-bezier(0.34,1.56,0.64,1)"}}>{snackPicks[0]?.emoji||"🎉"}</div>
-                <h2 style={{fontSize:26,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginTop:18,textAlign:"center"}}>Enjoy your snack!</h2>
-                <p style={{fontSize:14,color:MID,fontFamily:"'Baloo 2'",marginTop:8,textAlign:"center"}}>{snackPicks.map(x=>x.name).join(", ")}</p>
+                {showConfetti && <Confetti/>}
+                <div style={{fontSize:88,animation:"badgePop 0.5s cubic-bezier(0.34,1.56,0.64,1)",lineHeight:1}}>{snackPicks[0]?.emoji||"🎉"}</div>
+                {snackPicks.length>1 && (
+                  <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap",justifyContent:"center"}}>
+                    {snackPicks.slice(1).map((x,i)=><span key={i} style={{fontSize:36}}>{x.emoji}</span>)}
+                  </div>
+                )}
+                <h2 style={{fontSize:28,fontWeight:800,color:DARK,fontFamily:"'Baloo 2'",marginTop:20,textAlign:"center",animation:"fadeUp 0.4s 0.15s ease both"}}>
+                  Enjoy your snack! 🌟
+                </h2>
+                <p style={{fontSize:15,color:MID,fontFamily:"'Baloo 2'",marginTop:8,textAlign:"center",fontWeight:600,animation:"fadeUp 0.4s 0.25s ease both"}}>
+                  {snackPicks.map(x=>x.name).join(" + ")}
+                </p>
               </div>
             ) : inStockItems.length===0 ? (
               <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"40px 30px",textAlign:"center"}}>
